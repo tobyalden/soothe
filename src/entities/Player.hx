@@ -9,16 +9,19 @@ class Player extends ActiveEntity
 {
 
   public static inline var WALK_SPEED = 2.5;
-  public static inline var WALK_ACCEL = 0.28;
-  public static inline var RUN_SPEED = 2 * 2;
-  public static inline var RUN_ACCEL = 0.15;
+  public static inline var WALK_ACCEL = 0.25;
+  public static inline var WALK_TURN_MULTIPLIER = 2;
+  public static inline var RUN_TO_WALK_DECCEL = 0.38;
+  public static inline var RUN_SPEED = 2 * 2.3;
+  public static inline var RUN_ACCEL = 0.08;
   public static inline var STOP_DECCEL = 0.3;
-  public static inline var AIR_ACCEL = 0.18;
   public static inline var JUMP_POWER = 6;
   public static inline var JUMP_CANCEL_POWER = 3;
   public static inline var GRAVITY = 0.25;
   public static inline var MAX_FALL_SPEED = 3;
-  public static inline var SKID_MULTIPLIER = 1;
+  public static inline var SKID_THRESHOLD = 2.8;
+
+  private var isSkidding:Bool;
 
 	public function new(x:Int, y:Int)
 	{
@@ -32,6 +35,7 @@ class Player extends ActiveEntity
     sprite.add("skid", [6]);
     sprite.play("idle");
     setHitbox(12, 24, -2, 0);
+    isSkidding = false;
 		finishInitializing();
 	}
 
@@ -42,63 +46,61 @@ class Player extends ActiveEntity
     );
   }
 
+  private function isStartingSkid() {
+    return (
+      isOnGround() &&
+      isChangingDirection() &&
+      Math.abs(velocity.x) > SKID_THRESHOLD
+    );
+  }
+
+  private function isStoppingSkid() {
+    return velocity.x == 0 || !isChangingDirection();
+  }
+
   public override function update()
   {
-    var skidMultiplier = 1.0;
-    if(isOnGround() && isChangingDirection()) {
-      skidMultiplier = SKID_MULTIPLIER;
+    if(isStartingSkid()) {
+      isSkidding = true;
+    }
+    if(isStoppingSkid()) {
+      isSkidding = false;
     }
     if(Input.check(Key.LEFT)) {
-      if(!isOnGround()) {
-        velocity.x = velocity.x - AIR_ACCEL;
-        if(velocity.x < -RUN_SPEED) {
-          velocity.x = -RUN_SPEED;
-        }
-      }
-      else if(Input.check(Key.X)) {
+      if(Input.check(Key.X)) {
         if(velocity.x > -WALK_SPEED) {
-          velocity.x = velocity.x - WALK_ACCEL * skidMultiplier;
+          velocity.x = velocity.x - WALK_ACCEL;
         }
         else {
-          velocity.x = velocity.x - RUN_ACCEL * skidMultiplier;
-        }
-        if(velocity.x < -RUN_SPEED) {
-          velocity.x = -RUN_SPEED;
+          velocity.x = velocity.x - RUN_ACCEL;
         }
       }
       else {
-        velocity.x = velocity.x - WALK_ACCEL;
-        if(velocity.x < -WALK_SPEED) {
-          velocity.x = -WALK_SPEED;
+        var turnMultiplier = 1.0;
+        if(isChangingDirection()) {
+          turnMultiplier = WALK_TURN_MULTIPLIER;
         }
+        velocity.x = velocity.x - WALK_ACCEL * turnMultiplier;
       }
       if(isOnLeftWall()) {
         velocity.x = 0;
       }
     }
     else if(Input.check(Key.RIGHT)) {
-      if(!isOnGround()) {
-        velocity.x = velocity.x + AIR_ACCEL;
-        if(velocity.x > RUN_SPEED) {
-          velocity.x = RUN_SPEED;
-        }
-      }
-      else if(Input.check(Key.X)) {
+      if(Input.check(Key.X)) {
         if(velocity.x < WALK_SPEED) {
-          velocity.x = velocity.x + WALK_ACCEL * skidMultiplier;
+          velocity.x = velocity.x + WALK_ACCEL;
         }
         else {
-          velocity.x = velocity.x + RUN_ACCEL * skidMultiplier;
-        }
-        if(velocity.x > RUN_SPEED) {
-          velocity.x = RUN_SPEED;
+          velocity.x = velocity.x + RUN_ACCEL;
         }
       }
       else {
-        velocity.x = velocity.x + WALK_ACCEL;
-        if(velocity.x > WALK_SPEED) {
-          velocity.x = WALK_SPEED;
+        var turnMultiplier = 1.0;
+        if(isChangingDirection()) {
+          turnMultiplier = WALK_TURN_MULTIPLIER;
         }
+        velocity.x = velocity.x + WALK_ACCEL * turnMultiplier;
       }
       if(isOnRightWall()) {
         velocity.x = 0;
@@ -110,6 +112,23 @@ class Player extends ActiveEntity
       }
       else {
         velocity.x = Math.min(velocity.x + STOP_DECCEL, 0);
+      }
+    }
+
+    if(Input.check(Key.X)) {
+      if(velocity.x > RUN_SPEED) {
+        velocity.x = RUN_SPEED;
+      }
+      else if(velocity.x < -RUN_SPEED) {
+        velocity.x = -RUN_SPEED;
+      }
+    }
+    else {
+      if(velocity.x > WALK_SPEED) {
+        velocity.x = Math.max(velocity.x - RUN_TO_WALK_DECCEL, WALK_SPEED);
+      }
+      else if(velocity.x < -WALK_SPEED) {
+        velocity.x = Math.min(velocity.x + RUN_TO_WALK_DECCEL, -WALK_SPEED);
       }
     }
 
@@ -149,7 +168,7 @@ class Player extends ActiveEntity
     }
     else if(velocity.x != 0) {
       if(Input.check(Key.X)) {
-        if(isChangingDirection()) {
+        if(isSkidding) {
           sprite.play("skid");
         }
         else {
