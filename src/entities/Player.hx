@@ -8,19 +8,20 @@ import com.haxepunk.graphics.*;
 class Player extends ActiveEntity
 {
 
-  public static inline var SPEED = 1;
+  public static inline var SPEED = 2;
+  public static inline var JUMP_POWER = 5;
+  public static inline var GRAVITY = 0.16;
+  public static inline var MAX_FALL_SPEED = 3;
 
 	public function new(x:Int, y:Int)
 	{
 		super(x, y);
-    sprite = new Spritemap("graphics/player.png", 16, 16);
-    sprite.add("down", [0, 1], 6);
-    sprite.add("right", [2, 3], 6);
-    sprite.add("left", [4, 5], 6);
-    sprite.add("up", [6, 7], 6);
-    sprite.add("roll", [6, 8, 9, 10], 6);
-    sprite.play("down");
-    setHitbox(11, 15, -3, -1);
+    sprite = new Spritemap("graphics/player.png", 16, 24);
+    sprite.add("idle", [0]);
+    sprite.add("run", [1, 2, 3, 2], 10);
+    sprite.add("jump", [4]);
+    sprite.play("idle");
+    setHitbox(12, 24, -2, 0);
 		finishInitializing();
 	}
 
@@ -35,14 +36,15 @@ class Player extends ActiveEntity
     else {
       velocity.x = 0;
     }
-    if(Input.check(Key.UP)) {
-      velocity.y = -SPEED;
-    }
-    else if(Input.check(Key.DOWN)) {
-      velocity.y = SPEED;
+
+    if(isOnGround()) {
+      velocity.y = 0;
+      if(Input.pressed(Key.Z)) {
+        velocity.y = -JUMP_POWER;
+      }
     }
     else {
-      velocity.y = 0;
+      velocity.y += GRAVITY;
     }
 
     moveBy(velocity.x, velocity.y, "walls");
@@ -58,20 +60,20 @@ class Player extends ActiveEntity
 
   private function animate()
   {
-    if(velocity.x > 0) {
-      sprite.play("right");
+    if(!isOnGround()) {
+      sprite.play("jump");
     }
-    else if(velocity.x < 0) {
-      sprite.play("left");
-    }
-    else if(velocity.y > 0) {
-      sprite.play("down");
-    }
-    else if(velocity.y < 0) {
-      sprite.play("up");
+    else if(velocity.x != 0) {
+      sprite.play("run");
     }
     else {
-      sprite.stop();
+      sprite.play("idle");
+    }
+    if(velocity.x < 0) {
+      sprite.flipped = true;
+    }
+    else if(velocity.x > 0) {
+      sprite.flipped = false;
     }
   }
 }
