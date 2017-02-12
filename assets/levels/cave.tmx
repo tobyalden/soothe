@@ -75,6 +75,6 @@
 </data>
  </layer>
  <objectgroup name="entities">
-  <object id="1" gid="17" x="48" y="96" width="16" height="16"/>
+  <object id="1" gid="17" x="80" y="448" width="16" height="16"/>
  </objectgroup>
 </map>
