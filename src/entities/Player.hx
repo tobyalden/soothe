@@ -17,12 +17,17 @@ class Player extends ActiveEntity
   public static inline var AIR_ACCEL = 0.18;
   public static inline var STOP_DECCEL = 0.3;
   public static inline var JUMP_POWER = 6;
+  public static inline var SKID_JUMP_POWER = 7;
+  public static inline var WALL_JUMP_POWER = 4;
+  public static inline var WALL_STICK_TIME = 10;
   public static inline var JUMP_CANCEL_POWER = 2;
   public static inline var GRAVITY = 0.25;
+  public static inline var WALL_GRAVITY = 0.20;
   public static inline var MAX_FALL_SPEED = 3;
   public static inline var SKID_THRESHOLD = 2.8;
 
   private var isSkidding:Bool;
+  private var wallStickTimer:Int;
 
 	public function new(x:Int, y:Int)
 	{
@@ -37,6 +42,7 @@ class Player extends ActiveEntity
     sprite.play("idle");
     setHitbox(12, 24, -2, 0);
     isSkidding = false;
+    wallStickTimer = 0;
 		finishInitializing();
 	}
 
@@ -92,7 +98,15 @@ class Player extends ActiveEntity
     }
     else if(Input.check(Key.RIGHT)) {
       if(!isOnGround()) {
-        velocity.x += AIR_ACCEL;
+        if(isOnLeftWall()) {
+          wallStickTimer += 1;
+          if(wallStickTimer > WALL_STICK_TIME) {
+            velocity.x += AIR_ACCEL;
+          }
+        }
+        else {
+          velocity.x += AIR_ACCEL;
+        }
       }
       else if(Input.check(Key.X)) {
         if(velocity.x < WALK_SPEED) {
@@ -142,7 +156,30 @@ class Player extends ActiveEntity
     if(isOnGround()) {
       velocity.y = 0;
       if(Input.pressed(Key.Z)) {
-        velocity.y = -JUMP_POWER;
+        if(isSkidding) {
+          velocity.y = -SKID_JUMP_POWER;
+          velocity.x = WALK_SPEED * -(velocity.x / Math.abs(velocity.x));
+        }
+        else {
+          velocity.y = -JUMP_POWER;
+        }
+      }
+    }
+    else if(isOnWall()) {
+      if(velocity.y > 0) {
+        velocity.y += WALL_GRAVITY;
+      }
+      else {
+        velocity.y += GRAVITY;
+      }
+      if(Input.pressed(Key.Z)) {
+        velocity.y = -WALL_JUMP_POWER;
+        if(isOnLeftWall()) {
+          velocity.x = WALK_SPEED;
+        }
+        else {
+          velocity.x = -WALK_SPEED;
+        }
       }
     }
     else {
@@ -150,6 +187,10 @@ class Player extends ActiveEntity
       if(Input.released(Key.Z) && velocity.y < -JUMP_CANCEL_POWER) {
         velocity.y = -JUMP_CANCEL_POWER;
       }
+    }
+
+    if(!isOnWall()) {
+      wallStickTimer = 0;
     }
 
     moveBy(velocity.x, velocity.y, "walls");
