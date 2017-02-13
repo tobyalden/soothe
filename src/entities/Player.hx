@@ -14,9 +14,10 @@ class Player extends ActiveEntity
   public static inline var RUN_TO_WALK_DECCEL = 0.38;
   public static inline var RUN_SPEED = 2 * 2.3;
   public static inline var RUN_ACCEL = 0.08;
+  public static inline var AIR_ACCEL = 0.18;
   public static inline var STOP_DECCEL = 0.3;
   public static inline var JUMP_POWER = 6;
-  public static inline var JUMP_CANCEL_POWER = 3;
+  public static inline var JUMP_CANCEL_POWER = 2;
   public static inline var GRAVITY = 0.25;
   public static inline var MAX_FALL_SPEED = 3;
   public static inline var SKID_THRESHOLD = 2.8;
@@ -67,12 +68,15 @@ class Player extends ActiveEntity
       isSkidding = false;
     }
     if(Input.check(Key.LEFT)) {
-      if(Input.check(Key.X)) {
+      if(!isOnGround()) {
+        velocity.x -= AIR_ACCEL;
+      }
+      else if(Input.check(Key.X)) {
         if(velocity.x > -WALK_SPEED) {
-          velocity.x = velocity.x - WALK_ACCEL;
+          velocity.x -= WALK_ACCEL;
         }
         else {
-          velocity.x = velocity.x - RUN_ACCEL;
+          velocity.x -= RUN_ACCEL;
         }
       }
       else {
@@ -87,12 +91,15 @@ class Player extends ActiveEntity
       }
     }
     else if(Input.check(Key.RIGHT)) {
-      if(Input.check(Key.X)) {
+      if(!isOnGround()) {
+        velocity.x += AIR_ACCEL;
+      }
+      else if(Input.check(Key.X)) {
         if(velocity.x < WALK_SPEED) {
-          velocity.x = velocity.x + WALK_ACCEL;
+          velocity.x += WALK_ACCEL;
         }
         else {
-          velocity.x = velocity.x + RUN_ACCEL;
+          velocity.x += RUN_ACCEL;
         }
       }
       else {
