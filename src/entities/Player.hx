@@ -12,19 +12,22 @@ class Player extends ActiveEntity
   public static inline var WALK_ACCEL = 0.25;
   public static inline var WALK_TURN_MULTIPLIER = 2;
   public static inline var RUN_TO_WALK_DECCEL = 0.38;
-  public static inline var RUN_SPEED = 2 * 2.3;
+  public static inline var RUN_SPEED = 4.6;
   public static inline var RUN_ACCEL = 0.08;
   public static inline var AIR_ACCEL = 0.18;
+  public static inline var AIR_DECCEL = 0.1;
   public static inline var STOP_DECCEL = 0.3;
   public static inline var JUMP_POWER = 6;
   public static inline var SKID_JUMP_POWER = 7;
-  public static inline var WALL_JUMP_POWER = 4;
+  public static inline var WALL_JUMP_POWER = 4.65;
   public static inline var WALL_STICK_TIME = 10;
   public static inline var JUMP_CANCEL_POWER = 2;
   public static inline var GRAVITY = 0.25;
   public static inline var WALL_GRAVITY = 0.20;
-  public static inline var MAX_FALL_SPEED = 3;
+  public static inline var MAX_FALL_SPEED = 10;
+  public static inline var MAX_WALL_FALL_SPEED = 6;
   public static inline var SKID_THRESHOLD = 2.8;
+  public static inline var HEAD_BONK_SPEED = 0.5;
 
   private var isSkidding:Bool;
   private var wallStickTimer:Int;
@@ -75,7 +78,15 @@ class Player extends ActiveEntity
     }
     if(Input.check(Key.LEFT)) {
       if(!isOnGround()) {
-        velocity.x -= AIR_ACCEL;
+        if(isOnRightWall()) {
+          wallStickTimer += 1;
+          if(wallStickTimer > WALL_STICK_TIME) {
+            velocity.x -= WALK_ACCEL;
+          }
+        }
+        else {
+          velocity.x -= AIR_ACCEL;
+        }
       }
       else if(Input.check(Key.X)) {
         if(velocity.x > -WALK_SPEED) {
@@ -101,7 +112,7 @@ class Player extends ActiveEntity
         if(isOnLeftWall()) {
           wallStickTimer += 1;
           if(wallStickTimer > WALL_STICK_TIME) {
-            velocity.x += AIR_ACCEL;
+            velocity.x += WALK_ACCEL;
           }
         }
         else {
@@ -128,11 +139,15 @@ class Player extends ActiveEntity
       }
     }
     else {
+      var deccel = STOP_DECCEL;
+      if(!isOnGround()) {
+        deccel = AIR_DECCEL;
+      }
       if(velocity.x > 0) {
-        velocity.x = Math.max(velocity.x - STOP_DECCEL, 0);
+        velocity.x = Math.max(velocity.x - deccel, 0);
       }
       else {
-        velocity.x = Math.min(velocity.x + STOP_DECCEL, 0);
+        velocity.x = Math.min(velocity.x + deccel, 0);
       }
     }
 
@@ -175,21 +190,34 @@ class Player extends ActiveEntity
       if(Input.pressed(Key.Z)) {
         velocity.y = -WALL_JUMP_POWER;
         if(isOnLeftWall()) {
-          velocity.x = WALK_SPEED;
+          velocity.x = RUN_SPEED;
         }
         else {
-          velocity.x = -WALK_SPEED;
+          velocity.x = -RUN_SPEED;
         }
       }
     }
     else {
+      if(isOnCeiling()) {
+        velocity.y = HEAD_BONK_SPEED;
+      }
       velocity.y += GRAVITY;
       if(Input.released(Key.Z) && velocity.y < -JUMP_CANCEL_POWER) {
         velocity.y = -JUMP_CANCEL_POWER;
       }
     }
 
-    if(!isOnWall()) {
+    if(isOnWall()) {
+      velocity.y = Math.min(velocity.y, MAX_WALL_FALL_SPEED);
+    }
+    else {
+      velocity.y = Math.min(velocity.y, MAX_FALL_SPEED);
+    }
+
+    if(
+      !(isOnRightWall() && Input.check(Key.LEFT)) &&
+      !(isOnLeftWall() && Input.check(Key.RIGHT))
+    ) {
       wallStickTimer = 0;
     }
 
@@ -206,7 +234,9 @@ class Player extends ActiveEntity
 
   private function animate()
   {
-    if(!isOnGround()) {
+    if(!isOnGround(
+
+      )) {
       if(isOnWall()) {
         sprite.play("wallslide");
       }
