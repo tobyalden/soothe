@@ -4,6 +4,7 @@ import flash.system.System;
 import com.haxepunk.utils.*;
 import com.haxepunk.*;
 import com.haxepunk.graphics.*;
+import com.haxepunk.HXP;
 
 class Player extends ActiveEntity
 {
@@ -30,6 +31,7 @@ class Player extends ActiveEntity
   public static inline var HEAD_BONK_SPEED = 0.5;
 
   private var isSkidding:Bool;
+  private var isHanging:Bool;
   private var wallStickTimer:Int;
 
 	public function new(x:Int, y:Int)
@@ -45,6 +47,7 @@ class Player extends ActiveEntity
     sprite.play("idle");
     setHitbox(12, 24, -2, 0);
     isSkidding = false;
+    isHanging = false;
     wallStickTimer = 0;
 		finishInitializing();
 	}
@@ -187,6 +190,9 @@ class Player extends ActiveEntity
       else {
         velocity.y += GRAVITY;
       }
+      if(isHanging) {
+        velocity.y = 0;
+      }
       if(Input.pressed(Key.Z)) {
         velocity.y = -WALL_JUMP_POWER;
         if(isOnLeftWall()) {
@@ -202,6 +208,9 @@ class Player extends ActiveEntity
         velocity.y = HEAD_BONK_SPEED;
       }
       velocity.y += GRAVITY;
+    }
+
+    if(!isOnGround()) {
       if(Input.released(Key.Z) && velocity.y < -JUMP_CANCEL_POWER) {
         velocity.y = -JUMP_CANCEL_POWER;
       }
@@ -221,7 +230,31 @@ class Player extends ActiveEntity
       wallStickTimer = 0;
     }
 
-    moveBy(velocity.x, velocity.y, "walls");
+    moveBy(velocity.x, 0, "walls");
+
+    var wasCollidingWithLeftLedge = HXP.scene.collidePoint("walls", x - 1, y + 8) != null;
+    var wasCollidingWithRightLedge = HXP.scene.collidePoint("walls", x + width + 2 + 1, y + 8) != null;
+
+    moveBy(0, velocity.y, "walls");
+
+    var isCollidingWithLeftLedge = HXP.scene.collidePoint("walls", x - 1, y + 8) != null;
+    var isCollidingWithRightLedge = HXP.scene.collidePoint("walls", x + width + 2 + 1, y + 8) != null;
+
+    if(isOnLeftWall()) {
+      if(isCollidingWithLeftLedge && !wasCollidingWithLeftLedge) {
+        isHanging = true;
+        y = Math.floor(y/16)*16 - 8 + 16;
+      }
+    }
+    else if(isOnRightWall()) {
+      if(isCollidingWithRightLedge && !wasCollidingWithRightLedge) {
+        isHanging = true;
+        y = Math.floor(y/16)*16 - 8 + 16;
+      }
+    }
+    else {
+      isHanging = false;
+    }
 
     if(Input.check(Key.ESCAPE)) {
       System.exit(0);
@@ -234,9 +267,7 @@ class Player extends ActiveEntity
 
   private function animate()
   {
-    if(!isOnGround(
-
-      )) {
+    if(!isOnGround()) {
       if(isOnWall()) {
         sprite.play("wallslide");
       }
