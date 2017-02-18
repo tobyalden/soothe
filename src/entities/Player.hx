@@ -21,6 +21,7 @@ class Player extends ActiveEntity
   public static inline var JUMP_POWER = 6;
   public static inline var SKID_JUMP_POWER = 7;
   public static inline var WALL_JUMP_POWER = 4.65;
+  public static inline var LEDGE_HOP_POWER = 4.10;
   public static inline var WALL_STICK_TIME = 10;
   public static inline var JUMP_CANCEL_POWER = 2;
   public static inline var GRAVITY = 0.25;
@@ -196,10 +197,20 @@ class Player extends ActiveEntity
       if(Input.pressed(Key.Z)) {
         velocity.y = -WALL_JUMP_POWER;
         if(isOnLeftWall()) {
-          velocity.x = RUN_SPEED;
+          if(HXP.scene.collidePoint("walls", x - 1, y - height/2) != null || !Input.check(Key.LEFT)) {
+            velocity.x = RUN_SPEED;
+          }
+          else {
+            velocity.y = -LEDGE_HOP_POWER;
+          }
         }
-        else {
-          velocity.x = -RUN_SPEED;
+        else if(isOnRightWall()) {
+          if(HXP.scene.collidePoint("walls", right + 1, y - height/2) != null || !Input.check(Key.RIGHT)) {
+            velocity.x = -RUN_SPEED;
+          }
+          else {
+            velocity.y = -LEDGE_HOP_POWER;
+          }
         }
       }
     }
@@ -231,30 +242,7 @@ class Player extends ActiveEntity
     }
 
     moveBy(velocity.x, 0, "walls");
-
-    var wasCollidingWithLeftLedge = HXP.scene.collidePoint("walls", x - 1, y + 8) != null;
-    var wasCollidingWithRightLedge = HXP.scene.collidePoint("walls", x + width + 2 + 1, y + 8) != null;
-
     moveBy(0, velocity.y, "walls");
-
-    var isCollidingWithLeftLedge = HXP.scene.collidePoint("walls", x - 1, y + 8) != null;
-    var isCollidingWithRightLedge = HXP.scene.collidePoint("walls", x + width + 2 + 1, y + 8) != null;
-
-    if(isOnLeftWall()) {
-      if(isCollidingWithLeftLedge && !wasCollidingWithLeftLedge) {
-        isHanging = true;
-        y = Math.floor(y/16)*16 - 8 + 16;
-      }
-    }
-    else if(isOnRightWall()) {
-      if(isCollidingWithRightLedge && !wasCollidingWithRightLedge) {
-        isHanging = true;
-        y = Math.floor(y/16)*16 - 8 + 16;
-      }
-    }
-    else {
-      isHanging = false;
-    }
 
     if(Input.check(Key.ESCAPE)) {
       System.exit(0);
@@ -263,6 +251,11 @@ class Player extends ActiveEntity
     animate();
 
     super.update();
+  }
+
+  public override function moveCollideX(e:Entity) {
+    velocity.x /= 2;
+    return true;
   }
 
   private function animate()
