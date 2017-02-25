@@ -8,6 +8,7 @@ class Level extends TmxEntity
 {
 
   public static inline var PLAYER = 17;
+  public static inline var COIN = 18;
 
   public var entities:Array<Entity>;
 
@@ -15,14 +16,18 @@ class Level extends TmxEntity
   {
       super(filename);
       entities = new Array<Entity>();
-      loadGraphic("graphics/tiles.png", ["main"]);
-      loadMask("main", "walls", [0]);
       map = TmxMap.loadFromFile(filename);
+      loadGraphic("graphics/tiles.png", ["main"]);
+      loadMask("main", "walls");
       for(entity in map.getObjectGroup("entities").objects)
       {
         if(entity.gid == PLAYER)
         {
           entities.push(new Player(entity.x, entity.y));
+        }
+        if(entity.gid == COIN)
+        {
+          entities.push(new Coin(entity.x, entity.y - 16));
         }
       }
   }

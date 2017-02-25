@@ -6,7 +6,7 @@
 
 	<window fps="60" background="0xADD8E6" />
 	<!-- <window width="320" height="288" resizable="false" unless="mobile" /> -->
-	<window width="640" height="480" resizable="false" unless="mobile" />
+	<window width="1280" height="800" resizable="false" unless="mobile" />
 	<window fullscreen="true" if="mobile" />
 	<window orientation="landscape" vsync="true" antialiasing="0" if="cpp" />
 

@@ -10,6 +10,7 @@ class Main extends Engine
 #if debug
 		HXP.console.enable();
 #end
+		/*HXP.fullscreen = true;*/
 		HXP.scene = new GameScene();
 	}
 

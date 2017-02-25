@@ -46,6 +46,7 @@ class Player extends ActiveEntity
     sprite.add("wallslide", [5]);
     sprite.add("skid", [6]);
     sprite.play("idle");
+    type = "player";
     setHitbox(12, 24, -2, 0);
     isSkidding = false;
     isHanging = false;
