@@ -23,7 +23,8 @@ class Level extends TmxEntity
       {
         if(entity.gid == PLAYER)
         {
-          entities.push(new Player(entity.x, entity.y));
+          entities.push(new Player(entity.x, entity.y, false));
+          entities.push(new Player(entity.x + 20, entity.y, true));
         }
         if(entity.gid == COIN)
         {

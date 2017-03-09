@@ -31,14 +31,39 @@ class Player extends ActiveEntity
   public static inline var SKID_THRESHOLD = 2.8;
   public static inline var HEAD_BONK_SPEED = 0.5;
 
+  public var P1_CONTROLS = [
+    "left"=>Key.LEFT,
+    "right"=>Key.RIGHT,
+    "up"=>Key.UP,
+    "down"=>Key.DOWN,
+    "jump"=>Key.Z,
+    "run"=>Key.X
+  ];
+
+  public var P2_CONTROLS = [
+    "left"=>Key.J,
+    "right"=>Key.L,
+    "up"=>Key.I,
+    "down"=>Key.K,
+    "jump"=>Key.A,
+    "run"=>Key.S
+  ];
+
   private var isSkidding:Bool;
   private var isHanging:Bool;
+  private var isPlayerTwo:Bool;
   private var wallStickTimer:Int;
+  private var controls:Map<String, Int>;
 
-	public function new(x:Int, y:Int)
+	public function new(x:Int, y:Int, isPlayerTwo:Bool)
 	{
 		super(x, y);
-    sprite = new Spritemap("graphics/player.png", 16, 24);
+    if(isPlayerTwo) {
+      sprite = new Spritemap("graphics/player2.png", 16, 24);
+    }
+    else {
+      sprite = new Spritemap("graphics/player.png", 16, 24);
+    }
     sprite.add("idle", [0]);
     sprite.add("walk", [1, 2, 3, 2], 10);
     sprite.add("run", [1, 2, 3, 2], 13);
@@ -50,14 +75,36 @@ class Player extends ActiveEntity
     setHitbox(12, 24, -2, 0);
     isSkidding = false;
     isHanging = false;
+    this.isPlayerTwo = isPlayerTwo;
+    if(isPlayerTwo) {
+      controls = P2_CONTROLS;
+      name = "player2";
+    }
+    else {
+      controls = P1_CONTROLS;
+      name = "player1";
+    }
     wallStickTimer = 0;
 		finishInitializing();
 	}
 
+  private function getOtherPlayer() {
+    if(isPlayerTwo) {
+      return HXP.scene.getInstance("player1");
+    }
+    else {
+      return HXP.scene.getInstance("player2");
+    }
+  }
+
+  private function otherPlayerDistance() {
+    return distanceFrom(getOtherPlayer(), true);
+  }
+
   private function isChangingDirection() {
     return (
-      Input.check(Key.LEFT) && velocity.x > 0 ||
-      Input.check(Key.RIGHT) && velocity.x < 0
+      Input.check(controls["left"]) && velocity.x > 0 ||
+      Input.check(controls["right"]) && velocity.x < 0
     );
   }
 
@@ -81,7 +128,7 @@ class Player extends ActiveEntity
     if(isStoppingSkid()) {
       isSkidding = false;
     }
-    if(Input.check(Key.LEFT)) {
+    if(Input.check(controls["left"])) {
       if(!isOnGround()) {
         if(isOnRightWall()) {
           wallStickTimer += 1;
@@ -93,7 +140,7 @@ class Player extends ActiveEntity
           velocity.x -= AIR_ACCEL;
         }
       }
-      else if(Input.check(Key.X)) {
+      else if(Input.check(controls["run"])) {
         if(velocity.x > -WALK_SPEED) {
           velocity.x -= WALK_ACCEL;
         }
@@ -112,7 +159,7 @@ class Player extends ActiveEntity
         velocity.x = 0;
       }
     }
-    else if(Input.check(Key.RIGHT)) {
+    else if(Input.check(controls["right"])) {
       if(!isOnGround()) {
         if(isOnLeftWall()) {
           wallStickTimer += 1;
@@ -124,7 +171,7 @@ class Player extends ActiveEntity
           velocity.x += AIR_ACCEL;
         }
       }
-      else if(Input.check(Key.X)) {
+      else if(Input.check(controls["run"])) {
         if(velocity.x < WALK_SPEED) {
           velocity.x += WALK_ACCEL;
         }
@@ -156,7 +203,7 @@ class Player extends ActiveEntity
       }
     }
 
-    if(Input.check(Key.X)) {
+    if(Input.check(controls["run"])) {
       if(velocity.x > RUN_SPEED) {
         velocity.x = RUN_SPEED;
       }
@@ -175,7 +222,7 @@ class Player extends ActiveEntity
 
     if(isOnGround()) {
       velocity.y = 0;
-      if(Input.pressed(Key.Z)) {
+      if(Input.pressed(controls["jump"])) {
         if(isSkidding) {
           velocity.y = -SKID_JUMP_POWER;
           velocity.x = WALK_SPEED * -(velocity.x / Math.abs(velocity.x));
@@ -195,10 +242,10 @@ class Player extends ActiveEntity
       if(isHanging) {
         velocity.y = 0;
       }
-      if(Input.pressed(Key.Z)) {
+      if(Input.pressed(controls["jump"])) {
         velocity.y = -WALL_JUMP_POWER;
         if(isOnLeftWall()) {
-          if(HXP.scene.collidePoint("walls", x - 1, y - height/2) != null || !Input.check(Key.LEFT)) {
+          if(HXP.scene.collidePoint("walls", x - 1, y - height/2) != null || !Input.check(controls["left"])) {
             velocity.x = RUN_SPEED;
           }
           else {
@@ -206,7 +253,7 @@ class Player extends ActiveEntity
           }
         }
         else if(isOnRightWall()) {
-          if(HXP.scene.collidePoint("walls", right + 1, y - height/2) != null || !Input.check(Key.RIGHT)) {
+          if(HXP.scene.collidePoint("walls", right + 1, y - height/2) != null || !Input.check(controls["right"])) {
             velocity.x = -RUN_SPEED;
           }
           else {
@@ -223,7 +270,7 @@ class Player extends ActiveEntity
     }
 
     if(!isOnGround()) {
-      if(Input.released(Key.Z) && velocity.y < -JUMP_CANCEL_POWER) {
+      if(Input.released(controls["jump"]) && velocity.y < -JUMP_CANCEL_POWER) {
         velocity.y = -JUMP_CANCEL_POWER;
       }
     }
@@ -236,8 +283,8 @@ class Player extends ActiveEntity
     }
 
     if(
-      !(isOnRightWall() && Input.check(Key.LEFT)) &&
-      !(isOnLeftWall() && Input.check(Key.RIGHT))
+      !(isOnRightWall() && Input.check(controls["left"])) &&
+      !(isOnLeftWall() && Input.check(controls["right"]))
     ) {
       wallStickTimer = 0;
     }
@@ -251,12 +298,24 @@ class Player extends ActiveEntity
 
     animate();
 
+    if(!isPlayerTwo) {
+      setCamera();
+    }
+
     super.update();
   }
 
   public override function moveCollideX(e:Entity) {
     velocity.x /= 2;
     return true;
+  }
+
+  private function setCamera() {
+    HXP.camera.x = (x + getOtherPlayer().x)/2 - HXP.halfWidth;
+    HXP.camera.y = (y + getOtherPlayer().y)/2 - HXP.halfHeight;
+
+    HXP.screen.scaleX = Math.max(1, 2 - otherPlayerDistance()/1000);
+    HXP.screen.scaleY = Math.max(1, 2 - otherPlayerDistance()/1000);
   }
 
   private function animate()
@@ -270,7 +329,7 @@ class Player extends ActiveEntity
       }
     }
     else if(velocity.x != 0) {
-      if(Input.check(Key.X)) {
+      if(Input.check(controls["run"])) {
         if(isSkidding) {
           sprite.play("skid");
         }

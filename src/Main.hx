@@ -11,6 +11,7 @@ class Main extends Engine
 		HXP.console.enable();
 #end
 		/*HXP.fullscreen = true;*/
+		HXP.screen.smoothing = false;
 		HXP.scene = new GameScene();
 	}
 
