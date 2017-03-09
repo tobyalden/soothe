@@ -30,6 +30,8 @@ class Player extends ActiveEntity
   public static inline var MAX_WALL_FALL_SPEED = 6;
   public static inline var SKID_THRESHOLD = 2.8;
   public static inline var HEAD_BONK_SPEED = 0.5;
+  
+  public static inline var CAMERA_SCALE_THRESHOLD = 1000;
 
   public var P1_CONTROLS = [
     "left"=>Key.LEFT,
@@ -314,8 +316,8 @@ class Player extends ActiveEntity
     HXP.camera.x = (x + getOtherPlayer().x)/2 - HXP.halfWidth;
     HXP.camera.y = (y + getOtherPlayer().y)/2 - HXP.halfHeight;
 
-    HXP.screen.scaleX = Math.max(1, 2 - otherPlayerDistance()/1000);
-    HXP.screen.scaleY = Math.max(1, 2 - otherPlayerDistance()/1000);
+    HXP.screen.scaleX = Math.max(1, 2 - otherPlayerDistance()/CAMERA_SCALE_THRESHOLD);
+    HXP.screen.scaleY = Math.max(1, 2 - otherPlayerDistance()/CAMERA_SCALE_THRESHOLD);
   }
 
   private function animate()
