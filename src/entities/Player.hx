@@ -30,8 +30,8 @@ class Player extends ActiveEntity
   public static inline var MAX_WALL_FALL_SPEED = 6;
   public static inline var SKID_THRESHOLD = 2.8;
   public static inline var HEAD_BONK_SPEED = 0.5;
-  
-  public static inline var CAMERA_SCALE_THRESHOLD = 1000;
+
+  public static inline var CAMERA_SCALE_THRESHOLD = 500;
 
   public var P1_CONTROLS = [
     "left"=>Key.LEFT,
@@ -296,6 +296,13 @@ class Player extends ActiveEntity
 
     if(Input.check(Key.ESCAPE)) {
       System.exit(0);
+    }
+
+    if(Input.check(Key.R)) {
+      x = 300;
+      y = 300;
+      getOtherPlayer().x = 350;
+      getOtherPlayer().x = 300;
     }
 
     animate();
