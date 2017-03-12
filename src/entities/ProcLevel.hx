@@ -8,8 +8,8 @@ import com.haxepunk.masks.*;
 
 class ProcLevel extends Entity
 {
-  public static inline var TILE_SIZE = 10;
-  public static inline var LEVEL_SCALE = 2;
+  public static inline var TILE_SIZE = 7;
+  public static inline var LEVEL_SCALE = 3;
   public static inline var BIGGIFY_SCALE = 5;
 
   public static inline var OFFSET_CHANCE = 0.01;
