@@ -8,8 +8,8 @@ import com.haxepunk.masks.*;
 
 class ProcLevel extends Entity
 {
-  public static inline var TILE_SIZE = 15;
-  public static inline var LEVEL_SCALE = 1;
+  public static inline var TILE_SIZE = 10;
+  public static inline var LEVEL_SCALE = 2;
   public static inline var BIGGIFY_SCALE = 5;
 
   public static inline var OFFSET_CHANCE = 0.01;
@@ -38,6 +38,8 @@ class ProcLevel extends Entity
     for (i in -Math.round(DETAIL_REPEAT/2)...Math.round(DETAIL_REPEAT/2)) {
       detailMap(OFFSET_SIZE + i - 1);
     }
+    widenPassages();
+    removeFloaters();
     tiles = new Tilemap("graphics/stone.png", TILE_SIZE * this.levelWidth, TILE_SIZE * this.levelHeight, TILE_SIZE, TILE_SIZE);
     prettifyMap();
     finishInitializing();
@@ -61,6 +63,35 @@ class ProcLevel extends Entity
     mask = collisionMask;
     type = "walls";
     layer = 20;
+  }
+
+  public function widenPassages() {
+      for (x in 1...levelWidth - 1) {
+        for(y in 1...levelHeight - 1) {
+          if(map[y][x] == 0) {
+            if(map[y - 1][x] == 1 && map[y + 1][x] == 1) {
+              map[y - 1][x] = 0;
+              map[y + 1][x] = 0;
+            }
+            else if(map[y][x - 1] == 1 && map[y][x + 1] == 1) {
+              map[y][x - 1] = 0;
+              map[y][x + 1] = 0;
+            }
+          }
+        }
+      }
+  }
+
+  public function removeFloaters() {
+    for (x in 1...levelWidth - 1) {
+      for(y in 1...levelHeight - 1) {
+        if(map[y][x] == 1) {
+          if(emptyNeighbors(x, y, 1) == 8) {
+            map[y][x] = 0;
+          }
+        }
+      }
+    }
   }
 
   public function detailMap(offsetSize:Int) {
