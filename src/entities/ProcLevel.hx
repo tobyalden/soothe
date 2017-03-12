@@ -30,9 +30,9 @@ class ProcLevel extends Entity
     entities.push(new Player(330, 300, true));
     generateLevel();
     biggifyMap();
+    detailMap();
     tiles = new Tilemap("graphics/stone.png", TILE_SIZE * this.levelWidth, TILE_SIZE * this.levelHeight, TILE_SIZE, TILE_SIZE);
-    trace(TILE_SIZE * this.levelWidth);
-    // prettifyMap();
+    prettifyMap();
     finishInitializing();
   }
 
@@ -54,6 +54,26 @@ class ProcLevel extends Entity
     mask = collisionMask;
     type = "walls";
     layer = 20;
+  }
+
+  public function detailMap() {
+    for (x in 0...levelWidth - BIGGIFY_SCALE - Math.round(TILE_SIZE/2))
+    {
+      for (y in 0...levelHeight - BIGGIFY_SCALE - Math.round(TILE_SIZE/2))
+      {
+        if(Math.random() < 0.01)
+        {
+          var fill = Math.round(Math.random());
+          for(scaleX in 0...BIGGIFY_SCALE)
+          {
+            for(scaleY in 0...BIGGIFY_SCALE)
+            {
+                map[y + scaleY + Math.round(TILE_SIZE/2)][x + scaleX + Math.round(TILE_SIZE/2)] = fill;
+            }
+          }
+        }
+      }
+    }
   }
 
   public function generateLevel() {
