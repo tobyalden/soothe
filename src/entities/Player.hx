@@ -303,6 +303,8 @@ class Player extends ActiveEntity
       y = 300;
       getOtherPlayer().x = 350;
       getOtherPlayer().x = 300;
+      HXP.scene.getInstance("ball").x = 325;
+      HXP.scene.getInstance("ball").y = 325;
     }
 
     animate();

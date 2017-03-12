@@ -37,7 +37,8 @@ class ProcLevel extends Entity
     map = [for (y in 0...levelHeight) [for (x in 0...levelWidth) 0]];
     entities = new Array<Entity>();
     entities.push(new Player(300, 300, false));
-    entities.push(new Player(330, 300, true));
+    entities.push(new Ball(325, 300));
+    entities.push(new Player(350, 300, true));
     generateLevel();
   }
 
