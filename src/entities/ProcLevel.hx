@@ -12,6 +12,11 @@ class ProcLevel extends Entity
   public static inline var LEVEL_SCALE = 1;
   public static inline var BIGGIFY_SCALE = 5;
 
+  public static inline var OFFSET_CHANCE = 0.01;
+  public static inline var FILL_CHANCE = 0.75;
+  public static inline var DETAIL_REPEAT = 5;
+  public static inline var OFFSET_SIZE = 5;
+
   private var map:Array<Array<Int>>;
   private var tiles:Tilemap;
   private var collisionMask:Grid;
@@ -30,7 +35,9 @@ class ProcLevel extends Entity
     entities.push(new Player(330, 300, true));
     generateLevel();
     biggifyMap();
-    detailMap();
+    for (i in -Math.round(DETAIL_REPEAT/2)...Math.round(DETAIL_REPEAT/2)) {
+      detailMap(OFFSET_SIZE + i - 1);
+    }
     tiles = new Tilemap("graphics/stone.png", TILE_SIZE * this.levelWidth, TILE_SIZE * this.levelHeight, TILE_SIZE, TILE_SIZE);
     prettifyMap();
     finishInitializing();
@@ -56,19 +63,26 @@ class ProcLevel extends Entity
     layer = 20;
   }
 
-  public function detailMap() {
+  public function detailMap(offsetSize:Int) {
+    if(offsetSize < 2) {
+      offsetSize = 2;
+    }
     for (x in 0...levelWidth - BIGGIFY_SCALE - Math.round(TILE_SIZE/2))
     {
       for (y in 0...levelHeight - BIGGIFY_SCALE - Math.round(TILE_SIZE/2))
       {
-        if(Math.random() < 0.01)
+        if(Math.random() < OFFSET_CHANCE)
         {
-          var fill = Math.round(Math.random());
-          for(scaleX in 0...BIGGIFY_SCALE)
+          var fill = Math.round(Math.random() * FILL_CHANCE);
+          for(scaleX in 0...offsetSize)
           {
-            for(scaleY in 0...BIGGIFY_SCALE)
+            for(scaleY in 0...offsetSize)
             {
-                map[y + scaleY + Math.round(TILE_SIZE/2)][x + scaleX + Math.round(TILE_SIZE/2)] = fill;
+                var offsetX = x + scaleX + Math.round(TILE_SIZE/2);
+                var offsetY = y + scaleY + Math.round(TILE_SIZE/2);
+                if(offsetX >= 0 && offsetX < levelWidth && offsetY >= 0 && offsetY < levelHeight) {
+                  map[offsetY][offsetX] = fill;
+                }
             }
           }
         }
@@ -93,7 +107,7 @@ class ProcLevel extends Entity
           {
               for(scaleY in 0...BIGGIFY_SCALE)
               {
-                  bigMap[y * BIGGIFY_SCALE + scaleY][x * BIGGIFY_SCALE + scaleX] = map[y][x];
+                  bigMap[y * OFFSET_SIZE + scaleY][x * OFFSET_SIZE + scaleX] = map[y][x];
               }
           }
       }
