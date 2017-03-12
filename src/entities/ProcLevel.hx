@@ -3,6 +3,7 @@ package entities;
 import entities.*;
 import flash.geom.Point;
 import com.haxepunk.*;
+import com.haxepunk.utils.*;
 import com.haxepunk.graphics.*;
 import com.haxepunk.masks.*;
 
@@ -22,11 +23,15 @@ class ProcLevel extends Entity
   private var collisionMask:Grid;
   public var entities:Array<Entity>;
 
+  public var originallevelWidth:Int;
+  public var originallevelHeight:Int;
   public var levelWidth:Int;
   public var levelHeight:Int;
 
   public function new(levelWidth:Int, levelHeight:Int) {
     super(0, 0);
+    originallevelWidth = levelWidth;
+    originallevelHeight = levelHeight;
     this.levelWidth = levelWidth;
     this.levelHeight = levelHeight;
     map = [for (y in 0...levelHeight) [for (x in 0...levelWidth) 0]];
@@ -34,15 +39,15 @@ class ProcLevel extends Entity
     entities.push(new Player(300, 300, false));
     entities.push(new Player(330, 300, true));
     generateLevel();
-    biggifyMap();
-    for (i in -Math.round(DETAIL_REPEAT/2)...Math.round(DETAIL_REPEAT/2)) {
-      detailMap(OFFSET_SIZE + i - 1);
+  }
+
+  public override function update() {
+    if(Input.pressed(Key.G)) {
+      levelWidth = originallevelWidth;
+      levelHeight = originallevelHeight;
+      generateLevel();
     }
-    widenPassages();
-    removeFloaters();
-    tiles = new Tilemap("graphics/stone.png", TILE_SIZE * this.levelWidth, TILE_SIZE * this.levelHeight, TILE_SIZE, TILE_SIZE);
-    prettifyMap();
-    finishInitializing();
+    super.update();
   }
 
   public function finishInitializing()
@@ -51,8 +56,6 @@ class ProcLevel extends Entity
     tiles.smooth = false;
     graphic = tiles;
     tiles.loadFrom2DArray(map);
-
-    trace(levelWidth);
     collisionMask = new Grid(
       LEVEL_SCALE * levelWidth * TILE_SIZE,
       LEVEL_SCALE * levelHeight * TILE_SIZE,
@@ -126,6 +129,15 @@ class ProcLevel extends Entity
     /*cellularAutomata();*/
     connectAndContainAllRooms();
     createBoundaries();
+    biggifyMap();
+    for (i in -Math.round(DETAIL_REPEAT/2)...Math.round(DETAIL_REPEAT/2)) {
+      detailMap(OFFSET_SIZE + i - 1);
+    }
+    widenPassages();
+    removeFloaters();
+    tiles = new Tilemap("graphics/stone.png", TILE_SIZE * this.levelWidth, TILE_SIZE * this.levelHeight, TILE_SIZE, TILE_SIZE);
+    prettifyMap();
+    finishInitializing();
   }
 
   public function biggifyMap() {
