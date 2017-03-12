@@ -9,7 +9,8 @@ import com.haxepunk.masks.*;
 class ProcLevel extends Entity
 {
   public static inline var TILE_SIZE = 15;
-  public static inline var LEVEL_SCALE = 5;
+  public static inline var LEVEL_SCALE = 1;
+  public static inline var BIGGIFY_SCALE = 5;
 
   private var map:Array<Array<Int>>;
   private var tiles:Tilemap;
@@ -24,12 +25,14 @@ class ProcLevel extends Entity
     this.levelWidth = levelWidth;
     this.levelHeight = levelHeight;
     map = [for (y in 0...levelHeight) [for (x in 0...levelWidth) 0]];
-    tiles = new Tilemap("graphics/stone.png", levelWidth*TILE_SIZE, levelHeight*TILE_SIZE, TILE_SIZE, TILE_SIZE);
     entities = new Array<Entity>();
     entities.push(new Player(300, 300, false));
     entities.push(new Player(330, 300, true));
     generateLevel();
-    prettifyMap();
+    biggifyMap();
+    tiles = new Tilemap("graphics/stone.png", TILE_SIZE * this.levelWidth, TILE_SIZE * this.levelHeight, TILE_SIZE, TILE_SIZE);
+    trace(TILE_SIZE * this.levelWidth);
+    // prettifyMap();
     finishInitializing();
   }
 
@@ -37,9 +40,10 @@ class ProcLevel extends Entity
   {
     tiles.scale = LEVEL_SCALE;
     tiles.smooth = false;
-    tiles.loadFrom2DArray(map);
     graphic = tiles;
+    tiles.loadFrom2DArray(map);
 
+    trace(levelWidth);
     collisionMask = new Grid(
       LEVEL_SCALE * levelWidth * TILE_SIZE,
       LEVEL_SCALE * levelHeight * TILE_SIZE,
@@ -57,6 +61,26 @@ class ProcLevel extends Entity
     /*cellularAutomata();*/
     connectAndContainAllRooms();
     createBoundaries();
+  }
+
+  public function biggifyMap() {
+    var bigMap = [for (y in 0...levelHeight * BIGGIFY_SCALE) [for (x in 0...levelWidth * BIGGIFY_SCALE) 0]];
+    for (x in 0...levelWidth)
+    {
+      for (y in 0...levelHeight)
+      {
+          for(scaleX in 0...BIGGIFY_SCALE)
+          {
+              for(scaleY in 0...BIGGIFY_SCALE)
+              {
+                  bigMap[y * BIGGIFY_SCALE + scaleY][x * BIGGIFY_SCALE + scaleX] = map[y][x];
+              }
+          }
+      }
+    }
+    levelWidth = levelWidth * BIGGIFY_SCALE;
+    levelHeight = levelHeight * BIGGIFY_SCALE;
+    map = bigMap;
   }
 
   public function connectAndContainAllRooms()
