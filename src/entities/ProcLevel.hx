@@ -23,15 +23,11 @@ class ProcLevel extends Entity
   private var collisionMask:Grid;
   public var entities:Array<Entity>;
 
-  public var originallevelWidth:Int;
-  public var originallevelHeight:Int;
   public var levelWidth:Int;
   public var levelHeight:Int;
 
   public function new(levelWidth:Int, levelHeight:Int) {
     super(0, 0);
-    originallevelWidth = levelWidth;
-    originallevelHeight = levelHeight;
     this.levelWidth = levelWidth;
     this.levelHeight = levelHeight;
     map = [for (y in 0...levelHeight) [for (x in 0...levelWidth) 0]];
@@ -40,15 +36,6 @@ class ProcLevel extends Entity
     entities.push(new Ball(325, 300));
     entities.push(new Player(350, 300, true));
     generateLevel();
-  }
-
-  public override function update() {
-    if(Input.pressed(Key.G)) {
-      levelWidth = originallevelWidth;
-      levelHeight = originallevelHeight;
-      generateLevel();
-    }
-    super.update();
   }
 
   public function finishInitializing()
@@ -127,7 +114,6 @@ class ProcLevel extends Entity
 
   public function generateLevel() {
     randomizeMap();
-    /*cellularAutomata();*/
     connectAndContainAllRooms();
     createBoundaries();
     biggifyMap();
@@ -137,8 +123,34 @@ class ProcLevel extends Entity
     widenPassages();
     removeFloaters();
     tiles = new Tilemap("graphics/stone.png", TILE_SIZE * this.levelWidth, TILE_SIZE * this.levelHeight, TILE_SIZE, TILE_SIZE);
+    placeWater();
     prettifyMap();
     finishInitializing();
+  }
+
+  public function placeWater() {
+    for (x in 1...levelWidth - 1)
+    {
+      for (y in 0...levelHeight - 1)
+      {
+        if(map[y][x] == 0 && map[y][x - 1] == 1 && map[y + 1][x] == 1) {
+          var scanX = 1;
+          var addWater = true;
+          while(map[y][x + scanX] == 0 && scanX < levelWidth - 1) {
+            if(map[y + 1][x + scanX] == 0) {
+              addWater = false;
+              break;
+            }
+            scanX += 1;
+          }
+          if(addWater) {
+            var water = new Water(x * TILE_SIZE * LEVEL_SCALE, y * TILE_SIZE * LEVEL_SCALE + 8, TILE_SIZE * LEVEL_SCALE * scanX, TILE_SIZE * LEVEL_SCALE - 8);
+            entities.push(water);
+          }
+        }
+      }
+    }
+
   }
 
   public function biggifyMap() {

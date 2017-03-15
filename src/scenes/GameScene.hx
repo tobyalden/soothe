@@ -1,6 +1,7 @@
 package scenes;
 
 import com.haxepunk.*;
+import com.haxepunk.utils.*;
 import entities.*;
 
 class GameScene extends Scene
@@ -19,5 +20,13 @@ class GameScene extends Scene
 			add(entity);
 		}
 	}
+
+  public override function update() {
+    if(Input.pressed(Key.G)) {
+      HXP.scene = new GameScene();
+    }
+    super.update();
+  }
+
 
 }
