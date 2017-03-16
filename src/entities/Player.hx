@@ -51,20 +51,32 @@ class Player extends ActiveEntity
     "run"=>Key.S
   ];
 
+  public var P3_CONTROLS = [
+    "left"=>Key.D,
+    "right"=>Key.G,
+    "up"=>Key.R,
+    "down"=>Key.F,
+    "jump"=>Key.Q,
+    "run"=>Key.W
+  ];
+
   private var isSkidding:Bool;
   private var isHanging:Bool;
-  private var isPlayerTwo:Bool;
+  private var playerNumber:Int;
   private var wallStickTimer:Int;
   private var controls:Map<String, Int>;
 
-	public function new(x:Int, y:Int, isPlayerTwo:Bool)
+	public function new(x:Int, y:Int, playerNumber:Int)
 	{
 		super(x, y);
-    if(isPlayerTwo) {
+    if(playerNumber == 1) {
+      sprite = new Spritemap("graphics/player.png", 16, 24);
+    }
+    else if(playerNumber == 2) {
       sprite = new Spritemap("graphics/player2.png", 16, 24);
     }
     else {
-      sprite = new Spritemap("graphics/player.png", 16, 24);
+      sprite = new Spritemap("graphics/player3.png", 16, 24);
     }
     sprite.add("idle", [0]);
     sprite.add("walk", [1, 2, 3, 2], 10);
@@ -77,30 +89,37 @@ class Player extends ActiveEntity
     setHitbox(12, 24, -2, 0);
     isSkidding = false;
     isHanging = false;
-    this.isPlayerTwo = isPlayerTwo;
-    if(isPlayerTwo) {
+    this.playerNumber = playerNumber;
+    if(playerNumber == 1) {
+      controls = P1_CONTROLS;
+      name = "player1";
+    }
+    else if(playerNumber == 2) {
       controls = P2_CONTROLS;
       name = "player2";
     }
     else {
-      controls = P1_CONTROLS;
-      name = "player1";
+      controls = P3_CONTROLS;
+      name = "player3";
     }
     wallStickTimer = 0;
 		finishInitializing();
 	}
 
-  private function getOtherPlayer() {
-    if(isPlayerTwo) {
+  private function getPlayer(playerId:Int) {
+    if(playerId == 1) {
       return HXP.scene.getInstance("player1");
     }
-    else {
+    else if(playerId == 2) {
       return HXP.scene.getInstance("player2");
+    }
+    else {
+      return HXP.scene.getInstance("player3");
     }
   }
 
-  private function otherPlayerDistance() {
-    return distanceFrom(getOtherPlayer(), true);
+  private function otherPlayerDistance(playerId:Int) {
+    return distanceFrom(getPlayer(playerId), true);
   }
 
   private function isChangingDirection() {
@@ -298,18 +317,19 @@ class Player extends ActiveEntity
       System.exit(0);
     }
 
-    if(Input.check(Key.R)) {
+    if(Input.check(Key.M)) {
       x = 300;
       y = 300;
-      getOtherPlayer().x = 350;
-      getOtherPlayer().x = 300;
+      getPlayer(1).x = 300;
+      getPlayer(2).x = 350;
+      getPlayer(3).x = 400;
       HXP.scene.getInstance("ball").x = 325;
       HXP.scene.getInstance("ball").y = 325;
     }
 
     animate();
 
-    if(!isPlayerTwo) {
+    if(name == "player1") {
       setCamera();
     }
 
@@ -322,11 +342,12 @@ class Player extends ActiveEntity
   }
 
   private function setCamera() {
-    HXP.camera.x = (x + getOtherPlayer().x)/2 - HXP.halfWidth;
-    HXP.camera.y = (y + getOtherPlayer().y)/2 - HXP.halfHeight;
+    HXP.camera.x = (x/2 + getPlayer(2).x + getPlayer(3).x)/3 - HXP.halfWidth;
+    HXP.camera.y = (y/2 + getPlayer(2).y + getPlayer(3).y)/3 - HXP.halfHeight;
 
-    HXP.screen.scaleX = Math.max(1, 2 - otherPlayerDistance()/CAMERA_SCALE_THRESHOLD);
-    HXP.screen.scaleY = Math.max(1, 2 - otherPlayerDistance()/CAMERA_SCALE_THRESHOLD);
+    var playerDistance = (otherPlayerDistance(2) + otherPlayerDistance(3) + getPlayer(2).distanceFrom(getPlayer(3)) / 3);
+    HXP.screen.scaleX = Math.max(1, 2 - playerDistance/CAMERA_SCALE_THRESHOLD);
+    HXP.screen.scaleY = Math.max(1, 2 - playerDistance/CAMERA_SCALE_THRESHOLD);
   }
 
   private function animate()

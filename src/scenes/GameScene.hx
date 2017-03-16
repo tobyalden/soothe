@@ -22,7 +22,7 @@ class GameScene extends Scene
 	}
 
   public override function update() {
-    if(Input.pressed(Key.G)) {
+    if(Input.pressed(Key.P)) {
       HXP.scene = new GameScene();
     }
     super.update();
