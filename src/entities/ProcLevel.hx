@@ -124,8 +124,16 @@ class ProcLevel extends Entity
     removeFloaters();
     tiles = new Tilemap("graphics/stone.png", TILE_SIZE * this.levelWidth, TILE_SIZE * this.levelHeight, TILE_SIZE, TILE_SIZE);
     placeWater();
+    placeCoins();
     prettifyMap();
     finishInitializing();
+  }
+
+  public function placeCoins() {
+    for(i in 0...100) {
+      var openPoint = pickRandomOpenPoint();
+      entities.push(new Coin(Std.int(openPoint.x) * TILE_SIZE * LEVEL_SCALE, Std.int(openPoint.y) * TILE_SIZE * LEVEL_SCALE));
+    }
   }
 
   public function placeWater() {
