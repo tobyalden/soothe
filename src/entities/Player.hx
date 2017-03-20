@@ -31,6 +31,14 @@ class Player extends ActiveEntity
   public static inline var SKID_THRESHOLD = 2.8;
   public static inline var HEAD_BONK_SPEED = 0.5;
 
+  public static inline var HOVER_ACCEL = 0.3;
+  public static inline var HOVER_DECCEL = 0.2;
+  public static inline var MAX_HOVER_SPEED = 3;
+  public static inline var MAX_HOVER_RUN_SPEED = 5;
+  public static inline var HOVER_GRAVITY = 0.2;
+  public static inline var HOVER_MIN_GRAV_ESCAPE_SPEED = 0.3;
+
+
   public static inline var CAMERA_SCALE_THRESHOLD = 500;
 
   public var P1_CONTROLS = [
@@ -61,7 +69,7 @@ class Player extends ActiveEntity
   ];
 
   private var isSkidding:Bool;
-  private var isHanging:Bool;
+  private var isHovering:Bool;
   private var playerNumber:Int;
   private var wallStickTimer:Int;
   private var controls:Map<String, Int>;
@@ -88,7 +96,7 @@ class Player extends ActiveEntity
     type = "player";
     setHitbox(12, 24, -2, 0);
     isSkidding = false;
-    isHanging = false;
+    isHovering = false;
     this.playerNumber = playerNumber;
     if(playerNumber == 1) {
       controls = P1_CONTROLS;
@@ -143,6 +151,93 @@ class Player extends ActiveEntity
 
   public override function update()
   {
+    if(collide("hovertube", x, y) != null) {
+      hoverMovement();
+    }
+    else {
+      movement();
+    }
+
+    if(Input.check(Key.ESCAPE)) {
+      System.exit(0);
+    }
+
+    if(Input.check(Key.M)) {
+      x = 300;
+      y = 300;
+      getPlayer(1).x = 300;
+      getPlayer(2).x = 350;
+      getPlayer(3).x = 400;
+      HXP.scene.getInstance("ball").x = 325;
+      HXP.scene.getInstance("ball").y = 325;
+    }
+
+    animate();
+
+    if(name == "player1") {
+      setCamera();
+    }
+
+    super.update();
+  }
+
+  public function hoverMovement() {
+    if(Input.check(controls["up"])) {
+      velocity.y -= HOVER_ACCEL;
+    }
+    else if(Input.check(controls["down"])) {
+      velocity.y += HOVER_ACCEL;
+    }
+    else {
+      if(velocity.y > 0) {
+        velocity.y = Math.max(0, velocity.y - HOVER_DECCEL);
+      }
+      else {
+        velocity.y = Math.min(0, velocity.y + HOVER_DECCEL);
+      }
+    }
+    if(Input.check(controls["left"])) {
+      velocity.x -= HOVER_ACCEL;
+    }
+    else if(Input.check(controls["right"])) {
+      velocity.x += HOVER_ACCEL;
+    }
+    else {
+      if(velocity.x > 0) {
+        velocity.x = Math.max(0, velocity.x - HOVER_DECCEL);
+      }
+      else {
+        velocity.x = Math.min(0, velocity.x + HOVER_DECCEL);
+      }
+    }
+
+    if(velocity.y < HOVER_MIN_GRAV_ESCAPE_SPEED) {
+      velocity.y += HOVER_GRAVITY;
+    }
+
+    var maxVelocity = MAX_HOVER_SPEED;
+    if(Input.check(controls["run"])) {
+      maxVelocity = MAX_HOVER_RUN_SPEED;
+    }
+
+    if(velocity.y > maxVelocity) {
+      velocity.y -= HOVER_ACCEL;
+    }
+    else if(velocity.y < -maxVelocity) {
+      velocity.y += HOVER_ACCEL;
+    }
+
+    if(velocity.x > maxVelocity) {
+      velocity.x -= HOVER_ACCEL;
+    }
+    else if(velocity.x < -maxVelocity) {
+      velocity.x += HOVER_ACCEL;
+    }
+
+    moveBy(velocity.x, velocity.y, "walls");
+  }
+
+  public function movement() {
     if(isStartingSkid()) {
       isSkidding = true;
     }
@@ -260,9 +355,6 @@ class Player extends ActiveEntity
       else {
         velocity.y += GRAVITY;
       }
-      if(isHanging) {
-        velocity.y = 0;
-      }
       if(Input.pressed(controls["jump"])) {
         velocity.y = -WALL_JUMP_POWER;
         if(isOnLeftWall()) {
@@ -312,28 +404,6 @@ class Player extends ActiveEntity
 
     moveBy(velocity.x, 0, "walls");
     moveBy(0, velocity.y, "walls");
-
-    if(Input.check(Key.ESCAPE)) {
-      System.exit(0);
-    }
-
-    if(Input.check(Key.M)) {
-      x = 300;
-      y = 300;
-      getPlayer(1).x = 300;
-      getPlayer(2).x = 350;
-      getPlayer(3).x = 400;
-      HXP.scene.getInstance("ball").x = 325;
-      HXP.scene.getInstance("ball").y = 325;
-    }
-
-    animate();
-
-    if(name == "player1") {
-      setCamera();
-    }
-
-    super.update();
   }
 
   public override function moveCollideX(e:Entity) {
@@ -342,8 +412,12 @@ class Player extends ActiveEntity
   }
 
   private function setCamera() {
-    HXP.camera.x = (x/2 + getPlayer(2).x + getPlayer(3).x)/3 - HXP.halfWidth;
-    HXP.camera.y = (y/2 + getPlayer(2).y + getPlayer(3).y)/3 - HXP.halfHeight;
+
+    HXP.camera.x = x - HXP.halfWidth;
+    HXP.camera.y = y - HXP.halfHeight;
+
+    /*HXP.camera.x = (x + getPlayer(2).x + getPlayer(3).x)/3 - HXP.halfWidth;
+    HXP.camera.y = (y + getPlayer(2).y + getPlayer(3).y)/3 - HXP.halfHeight;*/
 
     var playerDistance = (otherPlayerDistance(2) + otherPlayerDistance(3) + getPlayer(2).distanceFrom(getPlayer(3)) / 3);
     HXP.screen.scaleX = Math.max(1, 2 - playerDistance/CAMERA_SCALE_THRESHOLD);

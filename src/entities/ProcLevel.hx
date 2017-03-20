@@ -121,11 +121,14 @@ class ProcLevel extends Entity
     for (i in -Math.round(DETAIL_REPEAT/2)...Math.round(DETAIL_REPEAT/2)) {
       detailMap(OFFSET_SIZE + i - 1);
     }
+    connectAndContainAllRooms();
     widenPassages();
     removeFloaters();
+    createBoundaries();
     tiles = new Tilemap("graphics/stone.png", TILE_SIZE * this.levelWidth, TILE_SIZE * this.levelHeight, TILE_SIZE, TILE_SIZE);
     placeWater();
     placeCoins();
+    placeExits();
     prettifyMap();
     finishInitializing();
   }
@@ -135,6 +138,17 @@ class ProcLevel extends Entity
       var openPoint = pickRandomOpenPoint();
       entities.push(new Coin(Std.int(openPoint.x) * TILE_SIZE * LEVEL_SCALE, Std.int(openPoint.y) * TILE_SIZE * LEVEL_SCALE));
     }
+  }
+
+  public function placeExits() {
+    for (x in 10...20)
+    {
+      for (y in 0...levelHeight)
+      {
+        map[y][x] = 0;
+      }
+    }
+    entities.push(new HoverTube(10 * TILE_SIZE * LEVEL_SCALE, 0, 10 * TILE_SIZE * LEVEL_SCALE, levelHeight * TILE_SIZE * LEVEL_SCALE));
   }
 
   public function placeWater() {
