@@ -32,11 +32,8 @@ class ProcLevel extends Entity
     this.levelHeight = levelHeight;
     map = [for (y in 0...levelHeight) [for (x in 0...levelWidth) 0]];
     entities = new Array<Entity>();
-    entities.push(new Player(300, 300, 1));
-    entities.push(new Ball(325, 300));
-    entities.push(new Player(350, 300, 2));
-    entities.push(new Player(400, 300, 3));
     generateLevel();
+    placePlayers();
   }
 
   public function finishInitializing()
@@ -55,6 +52,13 @@ class ProcLevel extends Entity
     mask = collisionMask;
     type = "walls";
     layer = 20;
+  }
+
+  public function placePlayers() {
+      entities.push(new Player(300, 0, 1));
+      entities.push(new Player(300 + 50, 0, 2));
+      entities.push(new Player(300 + 100, 0, 3));
+      entities.push(new Ball(0, 0));
   }
 
   public function widenPassages() {
@@ -121,7 +125,7 @@ class ProcLevel extends Entity
     for (i in -Math.round(DETAIL_REPEAT/2)...Math.round(DETAIL_REPEAT/2)) {
       detailMap(OFFSET_SIZE + i - 1);
     }
-    connectAndContainAllRooms();
+    /*connectAndContainAllRooms();*/
     widenPassages();
     removeFloaters();
     createBoundaries();
@@ -149,10 +153,12 @@ class ProcLevel extends Entity
       }
     }
     entities.push(new HoverTube(10 * TILE_SIZE * LEVEL_SCALE, 0, 10 * TILE_SIZE * LEVEL_SCALE, levelHeight * TILE_SIZE * LEVEL_SCALE));
+    entities.push(new Exit(10 * TILE_SIZE * LEVEL_SCALE, -TILE_SIZE * LEVEL_SCALE * 10, 10 * TILE_SIZE * LEVEL_SCALE, TILE_SIZE * LEVEL_SCALE * 10, Exit.TOP));
+    entities.push(new Exit(10 * TILE_SIZE * LEVEL_SCALE, levelHeight * TILE_SIZE * LEVEL_SCALE, 10 * TILE_SIZE * LEVEL_SCALE, TILE_SIZE * LEVEL_SCALE * 10, Exit.BOTTOM));
   }
 
   public function placeWater() {
-    for (x in 1...levelWidth - 1)
+    for (x in 21...levelWidth - 1)
     {
       for (y in 0...levelHeight - 1)
       {
@@ -167,7 +173,12 @@ class ProcLevel extends Entity
             scanX += 1;
           }
           if(addWater) {
-            var water = new Water(x * TILE_SIZE * LEVEL_SCALE, y * TILE_SIZE * LEVEL_SCALE + 8, TILE_SIZE * LEVEL_SCALE * scanX, TILE_SIZE * LEVEL_SCALE - 8);
+            var water = new Water(
+              x * TILE_SIZE * LEVEL_SCALE,
+              y * TILE_SIZE * LEVEL_SCALE + 8,
+              TILE_SIZE * LEVEL_SCALE * scanX,
+              TILE_SIZE * LEVEL_SCALE - 8
+            );
             entities.push(water);
           }
         }

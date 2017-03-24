@@ -5,6 +5,7 @@ import com.haxepunk.utils.*;
 import com.haxepunk.*;
 import com.haxepunk.graphics.*;
 import com.haxepunk.HXP;
+import scenes.*;
 
 class Player extends ActiveEntity
 {
@@ -37,7 +38,6 @@ class Player extends ActiveEntity
   public static inline var MAX_HOVER_RUN_SPEED = 5;
   public static inline var HOVER_GRAVITY = 0.2;
   public static inline var HOVER_MIN_GRAV_ESCAPE_SPEED = 0.3;
-
 
   public static inline var CAMERA_SCALE_THRESHOLD = 500;
 
@@ -151,11 +151,18 @@ class Player extends ActiveEntity
 
   public override function update()
   {
-    if(collide("hovertube", x, y) != null) {
+    if(collide("hovertube", x, y) != null || collide("exit", x, y) != null) {
       hoverMovement();
     }
     else {
       movement();
+    }
+
+    var exit = collide("exit", x, y);
+    if(exit != null) {
+      if(Input.pressed(Key.B) && name ==  "player1") {
+        HXP.scene = new GameScene();
+      }
     }
 
     if(Input.check(Key.ESCAPE)) {
@@ -163,7 +170,6 @@ class Player extends ActiveEntity
     }
 
     if(Input.check(Key.M)) {
-      x = 300;
       y = 300;
       getPlayer(1).x = 300;
       getPlayer(2).x = 350;
