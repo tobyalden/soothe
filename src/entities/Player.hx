@@ -163,7 +163,7 @@ class Player extends ActiveEntity
       if(Input.pressed(Key.Z)) {
         var exit = cast(_exit, Exit);
         if(exit.isActivated()) {
-          var level = new ProcLevel(25, 7, exit);
+          var level = new ProcLevel(40, 7, exit);
           HXP.scene.add(level);
           exit.deactivate();
         }

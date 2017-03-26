@@ -40,6 +40,7 @@ class ProcLevel extends Entity
     entities = new Array<Entity>();
     generateLevel();
     addEntitiesToScene();
+    layer = -999;
   }
 
   public function addEntitiesToScene() {
@@ -186,6 +187,12 @@ class ProcLevel extends Entity
       for (y in 0...levelHeight)
       {
         map[y][x] = 0;
+        if(entrance != null && y == 0 && entrance.getSide() == Exit.TOP) {
+          map[y][x] = 1;
+        }
+        else if(entrance != null && y == (levelHeight - 1) && entrance.getSide() == Exit.BOTTOM) {
+          map[y][x] = 1;
+        }
       }
     }
     entities.push(new HoverTube(horizontalOffset * TILE_AND_LEVEL_SCALE, 0, 10 * TILE_AND_LEVEL_SCALE, levelHeight * TILE_AND_LEVEL_SCALE));
@@ -193,11 +200,31 @@ class ProcLevel extends Entity
       entities.push(new Exit(horizontalOffset * TILE_AND_LEVEL_SCALE, levelHeight * TILE_AND_LEVEL_SCALE, 10 * TILE_AND_LEVEL_SCALE, TILE_AND_LEVEL_SCALE * 10, Exit.BOTTOM));
       entities.push(new Exit(horizontalOffset * TILE_AND_LEVEL_SCALE, -TILE_AND_LEVEL_SCALE * 10, 10 * TILE_AND_LEVEL_SCALE, TILE_AND_LEVEL_SCALE * 10, Exit.TOP));
     }
-    else if(entrance.getSide() != Exit.TOP) {
-      entities.push(new Exit(horizontalOffset * TILE_AND_LEVEL_SCALE, levelHeight * TILE_AND_LEVEL_SCALE, 10 * TILE_AND_LEVEL_SCALE, TILE_AND_LEVEL_SCALE * 10, Exit.BOTTOM));
-    }
-    else if(entrance.getSide() != Exit.BOTTOM) {
-      entities.push(new Exit(horizontalOffset * TILE_AND_LEVEL_SCALE, -TILE_AND_LEVEL_SCALE * 10, 10 * TILE_AND_LEVEL_SCALE, TILE_AND_LEVEL_SCALE * 10, Exit.TOP));
+    else {
+      var secondaryHorizontalOffset = Math.round(10 + Math.random() * (levelWidth - 20));
+      while(Math.abs(secondaryHorizontalOffset - horizontalOffset) < 20) {
+        secondaryHorizontalOffset = Math.round(10 + Math.random() * (levelWidth - 20));
+      }
+      for (x in secondaryHorizontalOffset...(secondaryHorizontalOffset + 10))
+      {
+        for (y in 0...levelHeight)
+        {
+          map[y][x] = 0;
+          if(entrance != null && y == 0 && entrance.getSide() == Exit.BOTTOM) {
+            map[y][x] = 1;
+          }
+          else if(entrance != null && y == (levelHeight - 1) && entrance.getSide() == Exit.TOP) {
+            map[y][x] = 1;
+          }
+        }
+      }
+      entities.push(new HoverTube(secondaryHorizontalOffset * TILE_AND_LEVEL_SCALE, 0, 10 * TILE_AND_LEVEL_SCALE, levelHeight * TILE_AND_LEVEL_SCALE));
+      if(entrance.getSide() != Exit.TOP) {
+        entities.push(new Exit(secondaryHorizontalOffset * TILE_AND_LEVEL_SCALE, levelHeight * TILE_AND_LEVEL_SCALE, 10 * TILE_AND_LEVEL_SCALE, TILE_AND_LEVEL_SCALE * 10, Exit.BOTTOM));
+      }
+      else if(entrance.getSide() != Exit.BOTTOM) {
+        entities.push(new Exit(secondaryHorizontalOffset * TILE_AND_LEVEL_SCALE, -TILE_AND_LEVEL_SCALE * 10, 10 * TILE_AND_LEVEL_SCALE, TILE_AND_LEVEL_SCALE * 10, Exit.TOP));
+      }
     }
 
     // OFFSET ENTIRE LEVEL SO EXITS TOUCH
