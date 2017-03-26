@@ -16,7 +16,6 @@ class GameScene extends Scene
 	{
     var level:ProcLevel = new ProcLevel(100, 7, null);
 		add(level);
-		level.addEntitiesToScene();
 		placePlayers();
 	}
 

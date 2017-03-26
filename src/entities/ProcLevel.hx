@@ -39,6 +39,7 @@ class ProcLevel extends Entity
     map = [for (y in 0...levelHeight) [for (x in 0...levelWidth) 0]];
     entities = new Array<Entity>();
     generateLevel();
+    addEntitiesToScene();
   }
 
   public function addEntitiesToScene() {
@@ -50,12 +51,16 @@ class ProcLevel extends Entity
   }
 
   public function setLevelOffset() {
+    xOffset = 0;
+    yOffset = 0;
     if(entrance == null) {
-      xOffset = 0;
-      yOffset = 0;
+      return;
     }
-    else if(entrance.getSide() == Exit.TOP) {
+    if(entrance.getSide() == Exit.TOP) {
       yOffset = entrance.y - levelHeight * TILE_AND_LEVEL_SCALE * BIGGIFY_SCALE;
+    }
+    else if(entrance.getSide() == Exit.BOTTOM) {
+      yOffset = entrance.y + entrance.height;
     }
   }
 

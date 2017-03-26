@@ -164,7 +164,6 @@ class Player extends ActiveEntity
         var exit = cast(_exit, Exit);
         var level = new ProcLevel(100, 7, exit);
         HXP.scene.add(level);
-        level.addEntitiesToScene();
       }
     }
 
