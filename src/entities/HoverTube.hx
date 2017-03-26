@@ -12,4 +12,5 @@ class HoverTube extends Entity
         setHitbox(width, height);
         type = "hovertube";
     }
+
 }

@@ -12,4 +12,11 @@ class Water extends Entity
         setHitbox(width, height);
         type = "water";
     }
+
+    override public function update() {
+      super.update();
+      if(collide("hovertube", x, y) != null) {
+        HXP.scene.remove(this);
+      }
+    }
 }

@@ -56,6 +56,7 @@ class ProcLevel extends Entity
     if(entrance == null) {
       return;
     }
+    xOffset = entrance.x - entrance.width;
     if(entrance.getSide() == Exit.TOP) {
       yOffset = entrance.y - levelHeight * TILE_AND_LEVEL_SCALE * BIGGIFY_SCALE;
     }
@@ -176,23 +177,33 @@ class ProcLevel extends Entity
 	}
 
   public function placeExits() {
-    for (x in 10...20)
+    var horizontalOffset = Math.round(10 + Math.random() * (levelWidth - 20));
+    if(entrance == null) {
+      horizontalOffset = 10;
+    }
+    for (x in horizontalOffset...(horizontalOffset + 10))
     {
       for (y in 0...levelHeight)
       {
         map[y][x] = 0;
       }
     }
-    entities.push(new HoverTube(10 * TILE_AND_LEVEL_SCALE, 0, 10 * TILE_AND_LEVEL_SCALE, levelHeight * TILE_AND_LEVEL_SCALE));
+    entities.push(new HoverTube(horizontalOffset * TILE_AND_LEVEL_SCALE, 0, 10 * TILE_AND_LEVEL_SCALE, levelHeight * TILE_AND_LEVEL_SCALE));
     if(entrance == null) {
-      entities.push(new Exit(10 * TILE_AND_LEVEL_SCALE, levelHeight * TILE_AND_LEVEL_SCALE, 10 * TILE_AND_LEVEL_SCALE, TILE_AND_LEVEL_SCALE * 10, Exit.BOTTOM));
-      entities.push(new Exit(10 * TILE_AND_LEVEL_SCALE, -TILE_AND_LEVEL_SCALE * 10, 10 * TILE_AND_LEVEL_SCALE, TILE_AND_LEVEL_SCALE * 10, Exit.TOP));
+      entities.push(new Exit(horizontalOffset * TILE_AND_LEVEL_SCALE, levelHeight * TILE_AND_LEVEL_SCALE, 10 * TILE_AND_LEVEL_SCALE, TILE_AND_LEVEL_SCALE * 10, Exit.BOTTOM));
+      entities.push(new Exit(horizontalOffset * TILE_AND_LEVEL_SCALE, -TILE_AND_LEVEL_SCALE * 10, 10 * TILE_AND_LEVEL_SCALE, TILE_AND_LEVEL_SCALE * 10, Exit.TOP));
     }
     else if(entrance.getSide() != Exit.TOP) {
-      entities.push(new Exit(10 * TILE_AND_LEVEL_SCALE, levelHeight * TILE_AND_LEVEL_SCALE, 10 * TILE_AND_LEVEL_SCALE, TILE_AND_LEVEL_SCALE * 10, Exit.BOTTOM));
+      entities.push(new Exit(horizontalOffset * TILE_AND_LEVEL_SCALE, levelHeight * TILE_AND_LEVEL_SCALE, 10 * TILE_AND_LEVEL_SCALE, TILE_AND_LEVEL_SCALE * 10, Exit.BOTTOM));
     }
     else if(entrance.getSide() != Exit.BOTTOM) {
-      entities.push(new Exit(10 * TILE_AND_LEVEL_SCALE, -TILE_AND_LEVEL_SCALE * 10, 10 * TILE_AND_LEVEL_SCALE, TILE_AND_LEVEL_SCALE * 10, Exit.TOP));
+      entities.push(new Exit(horizontalOffset * TILE_AND_LEVEL_SCALE, -TILE_AND_LEVEL_SCALE * 10, 10 * TILE_AND_LEVEL_SCALE, TILE_AND_LEVEL_SCALE * 10, Exit.TOP));
+    }
+
+    // OFFSET ENTIRE LEVEL SO EXITS TOUCH
+    x -= (horizontalOffset - 10) * TILE_AND_LEVEL_SCALE;
+    for (entity in entities) {
+      entity.x -= (horizontalOffset - 10) * TILE_AND_LEVEL_SCALE;
     }
   }
 
