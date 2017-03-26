@@ -16,16 +16,7 @@ class GameScene extends Scene
 	{
     var level:ProcLevel = new ProcLevel(100, 7, null);
 		add(level);
-		placePlayers();
 	}
-
-	public function placePlayers() {
-			add(new Player(300, 0, 1));
-			add(new Player(300 + 50, 0, 2));
-			add(new Player(300 + 100, 0, 3));
-			add(new Ball(0, 0));
-	}
-
 
   public override function update() {
     if(Input.pressed(Key.P)) {

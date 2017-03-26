@@ -12,11 +12,13 @@ class Exit extends Entity
     public static inline var RIGHT = 4;
 
     private var side:Int;
+    private var activated:Bool;
 
     public function new(x:Int, y:Int, width:Int, height:Int, side:Int)
     {
         super(x, y);
         this.side = side;
+        activated = true;
         graphic = new TiledImage("graphics/exit.png", width, height);
         setHitbox(width, height);
         layer = -10;
@@ -25,5 +27,14 @@ class Exit extends Entity
 
     public function getSide() {
       return side;
+    }
+
+    public function isActivated() {
+      return activated;
+    }
+
+    public function deactivate() {
+      activated = false;
+      graphic = new TiledImage("graphics/exit-deactivated.png", width, height);
     }
 }

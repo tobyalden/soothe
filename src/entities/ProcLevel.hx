@@ -154,6 +154,9 @@ class ProcLevel extends Entity
     placeWater();
     placeCoins();
     placeExits();
+    if(entrance == null) {
+      placePlayers();
+    }
     prettifyMap();
     finishInitializing();
   }
@@ -164,6 +167,13 @@ class ProcLevel extends Entity
       entities.push(new Coin(Std.int(openPoint.x) * TILE_AND_LEVEL_SCALE, Std.int(openPoint.y) * TILE_AND_LEVEL_SCALE));
     }
   }
+
+  public function placePlayers() {
+			entities.push(new Player(300, 0, 1));
+			entities.push(new Player(300 + 50, 0, 2));
+			entities.push(new Player(300 + 100, 0, 3));
+			entities.push(new Ball(0, 0));
+	}
 
   public function placeExits() {
     for (x in 10...20)

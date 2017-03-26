@@ -160,10 +160,13 @@ class Player extends ActiveEntity
 
     var _exit = collide("exit", x, y);
     if(_exit != null) {
-      if(Input.pressed(Key.B) && name ==  "player1") {
+      if(Input.pressed(Key.Z)) {
         var exit = cast(_exit, Exit);
-        var level = new ProcLevel(100, 7, exit);
-        HXP.scene.add(level);
+        if(exit.isActivated()) {
+          var level = new ProcLevel(100, 7, exit);
+          HXP.scene.add(level);
+          exit.deactivate();
+        }
       }
     }
 
