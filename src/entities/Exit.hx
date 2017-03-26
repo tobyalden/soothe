@@ -5,6 +5,7 @@ import com.haxepunk.graphics.*;
 
 class Exit extends Entity
 {
+    public static inline var NONE = 0;
     public static inline var TOP = 1;
     public static inline var BOTTOM = 2;
     public static inline var LEFT = 3;

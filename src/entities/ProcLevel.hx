@@ -11,6 +11,7 @@ class ProcLevel extends Entity
 {
   public static inline var TILE_SIZE = 7;
   public static inline var LEVEL_SCALE = 3;
+  public static inline var TILE_AND_LEVEL_SCALE = TILE_SIZE * LEVEL_SCALE;
   public static inline var BIGGIFY_SCALE = 5;
 
   public static inline var OFFSET_CHANCE = 0.01;
@@ -25,15 +26,37 @@ class ProcLevel extends Entity
 
   public var levelWidth:Int;
   public var levelHeight:Int;
+  public var entrance:Exit;
+  public var xOffset:Float;
+  public var yOffset:Float;
 
-  public function new(levelWidth:Int, levelHeight:Int) {
-    super(0, 0);
+  public function new(levelWidth:Int, levelHeight:Int, entrance:Exit) {
     this.levelWidth = levelWidth;
     this.levelHeight = levelHeight;
+    this.entrance = entrance;
+    setLevelOffset();
+    super(xOffset, yOffset);
     map = [for (y in 0...levelHeight) [for (x in 0...levelWidth) 0]];
     entities = new Array<Entity>();
     generateLevel();
-    placePlayers();
+  }
+
+  public function addEntitiesToScene() {
+    for (entity in entities) {
+      entity.x += xOffset;
+      entity.y += yOffset;
+      HXP.scene.add(entity);
+    }
+  }
+
+  public function setLevelOffset() {
+    if(entrance == null) {
+      xOffset = 0;
+      yOffset = 0;
+    }
+    else if(entrance.getSide() == Exit.TOP) {
+      yOffset = entrance.y - levelHeight * TILE_AND_LEVEL_SCALE * BIGGIFY_SCALE;
+    }
   }
 
   public function finishInitializing()
@@ -52,13 +75,6 @@ class ProcLevel extends Entity
     mask = collisionMask;
     type = "walls";
     layer = 20;
-  }
-
-  public function placePlayers() {
-      entities.push(new Player(300, 0, 1));
-      entities.push(new Player(300 + 50, 0, 2));
-      entities.push(new Player(300 + 100, 0, 3));
-      entities.push(new Ball(0, 0));
   }
 
   public function widenPassages() {
@@ -140,7 +156,7 @@ class ProcLevel extends Entity
   public function placeCoins() {
     for(i in 0...100) {
       var openPoint = pickRandomOpenPoint();
-      entities.push(new Coin(Std.int(openPoint.x) * TILE_SIZE * LEVEL_SCALE, Std.int(openPoint.y) * TILE_SIZE * LEVEL_SCALE));
+      entities.push(new Coin(Std.int(openPoint.x) * TILE_AND_LEVEL_SCALE, Std.int(openPoint.y) * TILE_AND_LEVEL_SCALE));
     }
   }
 
@@ -152,9 +168,17 @@ class ProcLevel extends Entity
         map[y][x] = 0;
       }
     }
-    entities.push(new HoverTube(10 * TILE_SIZE * LEVEL_SCALE, 0, 10 * TILE_SIZE * LEVEL_SCALE, levelHeight * TILE_SIZE * LEVEL_SCALE));
-    entities.push(new Exit(10 * TILE_SIZE * LEVEL_SCALE, -TILE_SIZE * LEVEL_SCALE * 10, 10 * TILE_SIZE * LEVEL_SCALE, TILE_SIZE * LEVEL_SCALE * 10, Exit.TOP));
-    entities.push(new Exit(10 * TILE_SIZE * LEVEL_SCALE, levelHeight * TILE_SIZE * LEVEL_SCALE, 10 * TILE_SIZE * LEVEL_SCALE, TILE_SIZE * LEVEL_SCALE * 10, Exit.BOTTOM));
+    entities.push(new HoverTube(10 * TILE_AND_LEVEL_SCALE, 0, 10 * TILE_AND_LEVEL_SCALE, levelHeight * TILE_AND_LEVEL_SCALE));
+    if(entrance == null) {
+      entities.push(new Exit(10 * TILE_AND_LEVEL_SCALE, levelHeight * TILE_AND_LEVEL_SCALE, 10 * TILE_AND_LEVEL_SCALE, TILE_AND_LEVEL_SCALE * 10, Exit.BOTTOM));
+      entities.push(new Exit(10 * TILE_AND_LEVEL_SCALE, -TILE_AND_LEVEL_SCALE * 10, 10 * TILE_AND_LEVEL_SCALE, TILE_AND_LEVEL_SCALE * 10, Exit.TOP));
+    }
+    else if(entrance.getSide() != Exit.TOP) {
+      entities.push(new Exit(10 * TILE_AND_LEVEL_SCALE, levelHeight * TILE_AND_LEVEL_SCALE, 10 * TILE_AND_LEVEL_SCALE, TILE_AND_LEVEL_SCALE * 10, Exit.BOTTOM));
+    }
+    else if(entrance.getSide() != Exit.BOTTOM) {
+      entities.push(new Exit(10 * TILE_AND_LEVEL_SCALE, -TILE_AND_LEVEL_SCALE * 10, 10 * TILE_AND_LEVEL_SCALE, TILE_AND_LEVEL_SCALE * 10, Exit.TOP));
+    }
   }
 
   public function placeWater() {
@@ -174,10 +198,10 @@ class ProcLevel extends Entity
           }
           if(addWater) {
             var water = new Water(
-              x * TILE_SIZE * LEVEL_SCALE,
-              y * TILE_SIZE * LEVEL_SCALE + 8,
-              TILE_SIZE * LEVEL_SCALE * scanX,
-              TILE_SIZE * LEVEL_SCALE - 8
+              x * TILE_AND_LEVEL_SCALE,
+              y * TILE_AND_LEVEL_SCALE + 8,
+              TILE_AND_LEVEL_SCALE * scanX,
+              TILE_AND_LEVEL_SCALE - 8
             );
             entities.push(water);
           }
