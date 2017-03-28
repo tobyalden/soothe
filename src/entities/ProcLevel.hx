@@ -164,7 +164,7 @@ class ProcLevel extends Entity
   }
 
   public function placeCoins() {
-    for(i in 0...100) {
+    for(i in 0...50) {
       var openPoint = pickRandomOpenPoint();
       entities.push(new Coin(Std.int(openPoint.x) * TILE_AND_LEVEL_SCALE, Std.int(openPoint.y) * TILE_AND_LEVEL_SCALE));
     }

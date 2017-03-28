@@ -39,6 +39,8 @@ class Player extends ActiveEntity
   public static inline var HOVER_GRAVITY = 0.2;
   public static inline var HOVER_MIN_GRAV_ESCAPE_SPEED = 0.3;
 
+  public static inline var JOYSTICK_RUN_THRESHOLD = 0.5;
+
   public static inline var CAMERA_SCALE_THRESHOLD = 500;
 
   public var P1_CONTROLS = [
@@ -68,11 +70,15 @@ class Player extends ActiveEntity
     "run"=>Key.W
   ];
 
+  private var isRunning:Bool;
   private var isSkidding:Bool;
   private var isHovering:Bool;
   private var playerNumber:Int;
   private var wallStickTimer:Int;
   private var controls:Map<String, Int>;
+
+  private var isUsingJoystick:Bool;
+  private var joystick:Joystick;
 
 	public function new(x:Int, y:Int, playerNumber:Int)
 	{
@@ -97,7 +103,10 @@ class Player extends ActiveEntity
     setHitbox(12, 24, -2, 0);
     isSkidding = false;
     isHovering = false;
+    isRunning = false;
     this.playerNumber = playerNumber;
+    isUsingJoystick = false;
+    joystick = Input.joystick(playerNumber - 1);
     if(playerNumber == 1) {
       controls = P1_CONTROLS;
       name = "player1";
@@ -111,8 +120,65 @@ class Player extends ActiveEntity
       name = "player3";
     }
     wallStickTimer = 0;
+    /*sprite.scale = 2;
+    width *= 2;
+    height *= 2;*/
 		finishInitializing();
 	}
+
+  private function checkControl(control:String) {
+    if(isUsingJoystick) {
+      if(control == "left") {
+        return joystick.getAxis(0) < 0;
+      }
+      if(control == "right") {
+        return joystick.getAxis(0) > 0;
+      }
+      if(control == "up") {
+        return joystick.getAxis(1) < 0;
+      }
+      if(control == "down") {
+        return joystick.getAxis(1) > 0;
+      }
+      if(control == "jump") {
+        return joystick.check(5);
+      }
+    }
+    else {
+      if(Input.check(controls[control])) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private function pressedControl(control:String) {
+    if(isUsingJoystick) {
+      if(control == "jump") {
+        return joystick.pressed(5);
+      }
+    }
+    else {
+      if(Input.pressed(controls[control])) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private function releasedControl(control:String) {
+    if(isUsingJoystick) {
+      if(control == "jump") {
+        return joystick.released(5);
+      }
+    }
+    else {
+      if(Input.released(controls[control])) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   private function getPlayer(playerId:Int) {
     if(playerId == 1) {
@@ -132,8 +198,8 @@ class Player extends ActiveEntity
 
   private function isChangingDirection() {
     return (
-      Input.check(controls["left"]) && velocity.x > 0 ||
-      Input.check(controls["right"]) && velocity.x < 0
+      checkControl("left") && velocity.x > 0 ||
+      checkControl("right") && velocity.x < 0
     );
   }
 
@@ -151,6 +217,14 @@ class Player extends ActiveEntity
 
   public override function update()
   {
+    isUsingJoystick = Input.joysticks >= playerNumber;
+
+    for(i in 0...100) {
+      if(joystick.pressed(i)) {
+        trace(i);
+      }
+    }
+
     if(collide("hovertube", x, y) != null || collide("exit", x, y) != null) {
       hoverMovement();
     }
@@ -160,21 +234,21 @@ class Player extends ActiveEntity
 
     var _exit = collide("exit", x, y);
     if(_exit != null) {
-      if(Input.pressed(Key.Z)) {
+      if(pressedControl("jump")) {
         var exit = cast(_exit, Exit);
         if(exit.isActivated()) {
-          var level = new ProcLevel(40, 7, exit);
+          var level = new ProcLevel(25, 7, exit);
           HXP.scene.add(level);
           exit.deactivate();
         }
       }
     }
 
-    if(Input.check(Key.ESCAPE)) {
+    if(checkControl("quit")) {
       System.exit(0);
     }
 
-    if(Input.check(Key.M)) {
+    if(checkControl("reset")) {
       y = 300;
       getPlayer(1).x = 300;
       getPlayer(2).x = 350;
@@ -193,10 +267,11 @@ class Player extends ActiveEntity
   }
 
   public function hoverMovement() {
-    if(Input.check(controls["up"])) {
+    isRunning = Math.abs(joystick.getAxis(0)) > JOYSTICK_RUN_THRESHOLD || Math.abs(joystick.getAxis(1)) > JOYSTICK_RUN_THRESHOLD;
+    if(checkControl("up")) {
       velocity.y -= HOVER_ACCEL;
     }
-    else if(Input.check(controls["down"])) {
+    else if(checkControl("down")) {
       velocity.y += HOVER_ACCEL;
     }
     else {
@@ -207,10 +282,10 @@ class Player extends ActiveEntity
         velocity.y = Math.min(0, velocity.y + HOVER_DECCEL);
       }
     }
-    if(Input.check(controls["left"])) {
+    if(checkControl("left")) {
       velocity.x -= HOVER_ACCEL;
     }
-    else if(Input.check(controls["right"])) {
+    else if(checkControl("right")) {
       velocity.x += HOVER_ACCEL;
     }
     else {
@@ -227,7 +302,7 @@ class Player extends ActiveEntity
     }
 
     var maxVelocity = MAX_HOVER_SPEED;
-    if(Input.check(controls["run"])) {
+    if(isRunning) {
       maxVelocity = MAX_HOVER_RUN_SPEED;
     }
 
@@ -249,13 +324,14 @@ class Player extends ActiveEntity
   }
 
   public function movement() {
+    isRunning = Math.abs(joystick.getAxis(0)) > JOYSTICK_RUN_THRESHOLD;
     if(isStartingSkid()) {
       isSkidding = true;
     }
     if(isStoppingSkid()) {
       isSkidding = false;
     }
-    if(Input.check(controls["left"])) {
+    if(checkControl("left")) {
       if(!isOnGround()) {
         if(isOnRightWall()) {
           wallStickTimer += 1;
@@ -267,7 +343,7 @@ class Player extends ActiveEntity
           velocity.x -= AIR_ACCEL;
         }
       }
-      else if(Input.check(controls["run"])) {
+      else if(isRunning) {
         if(velocity.x > -WALK_SPEED) {
           velocity.x -= WALK_ACCEL;
         }
@@ -286,7 +362,7 @@ class Player extends ActiveEntity
         velocity.x = 0;
       }
     }
-    else if(Input.check(controls["right"])) {
+    else if(checkControl("right")) {
       if(!isOnGround()) {
         if(isOnLeftWall()) {
           wallStickTimer += 1;
@@ -298,7 +374,7 @@ class Player extends ActiveEntity
           velocity.x += AIR_ACCEL;
         }
       }
-      else if(Input.check(controls["run"])) {
+      else if(isRunning) {
         if(velocity.x < WALK_SPEED) {
           velocity.x += WALK_ACCEL;
         }
@@ -330,7 +406,7 @@ class Player extends ActiveEntity
       }
     }
 
-    if(Input.check(controls["run"])) {
+    if(isRunning) {
       if(velocity.x > RUN_SPEED) {
         velocity.x = RUN_SPEED;
       }
@@ -349,7 +425,7 @@ class Player extends ActiveEntity
 
     if(isOnGround()) {
       velocity.y = 0;
-      if(Input.pressed(controls["jump"])) {
+      if(pressedControl("jump")) {
         if(isSkidding) {
           velocity.y = -SKID_JUMP_POWER;
           velocity.x = WALK_SPEED * -(velocity.x / Math.abs(velocity.x));
@@ -366,10 +442,10 @@ class Player extends ActiveEntity
       else {
         velocity.y += GRAVITY;
       }
-      if(Input.pressed(controls["jump"])) {
+      if(pressedControl("jump")) {
         velocity.y = -WALL_JUMP_POWER;
         if(isOnLeftWall()) {
-          if(HXP.scene.collidePoint("walls", x - 1, y - height/2) != null || !Input.check(controls["left"])) {
+          if(HXP.scene.collidePoint("walls", x - 1, y - height/2) != null || !checkControl("left")) {
             velocity.x = RUN_SPEED;
           }
           else {
@@ -377,7 +453,7 @@ class Player extends ActiveEntity
           }
         }
         else if(isOnRightWall()) {
-          if(HXP.scene.collidePoint("walls", right + 1, y - height/2) != null || !Input.check(controls["right"])) {
+          if(HXP.scene.collidePoint("walls", right + 1, y - height/2) != null || !checkControl("right")) {
             velocity.x = -RUN_SPEED;
           }
           else {
@@ -394,7 +470,7 @@ class Player extends ActiveEntity
     }
 
     if(!isOnGround()) {
-      if(Input.released(controls["jump"]) && velocity.y < -JUMP_CANCEL_POWER) {
+      if(releasedControl("jump") && velocity.y < -JUMP_CANCEL_POWER) {
         velocity.y = -JUMP_CANCEL_POWER;
       }
     }
@@ -407,8 +483,8 @@ class Player extends ActiveEntity
     }
 
     if(
-      !(isOnRightWall() && Input.check(controls["left"])) &&
-      !(isOnLeftWall() && Input.check(controls["right"]))
+      !(isOnRightWall() && checkControl("left")) &&
+      !(isOnLeftWall() && checkControl("right"))
     ) {
       wallStickTimer = 0;
     }
@@ -446,7 +522,7 @@ class Player extends ActiveEntity
       }
     }
     else if(velocity.x != 0) {
-      if(Input.check(controls["run"])) {
+      if(isRunning) {
         if(isSkidding) {
           sprite.play("skid");
         }
