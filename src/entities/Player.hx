@@ -141,7 +141,7 @@ class Player extends ActiveEntity
         return joystick.getAxis(1) > 0;
       }
       if(control == "jump") {
-        return joystick.check(5);
+        return joystick.check(4) || joystick.check(1);
       }
     }
     else {
@@ -155,7 +155,7 @@ class Player extends ActiveEntity
   private function pressedControl(control:String) {
     if(isUsingJoystick) {
       if(control == "jump") {
-        return joystick.pressed(5);
+        return joystick.pressed(4) ||  joystick.pressed(1);
       }
     }
     else {
@@ -169,7 +169,7 @@ class Player extends ActiveEntity
   private function releasedControl(control:String) {
     if(isUsingJoystick) {
       if(control == "jump") {
-        return joystick.released(5);
+        return joystick.released(4) || joystick.released(1);
       }
     }
     else {
@@ -221,7 +221,7 @@ class Player extends ActiveEntity
 
     for(i in 0...100) {
       if(joystick.pressed(i)) {
-        trace(i);
+        trace("pressed joystick key " + i);
       }
     }
 
@@ -267,7 +267,7 @@ class Player extends ActiveEntity
   }
 
   public function hoverMovement() {
-    isRunning = Math.abs(joystick.getAxis(0)) > JOYSTICK_RUN_THRESHOLD || Math.abs(joystick.getAxis(1)) > JOYSTICK_RUN_THRESHOLD;
+    isRunning = isUsingJoystick || Math.abs(joystick.getAxis(0)) > JOYSTICK_RUN_THRESHOLD || Math.abs(joystick.getAxis(1)) > JOYSTICK_RUN_THRESHOLD;
     if(checkControl("up")) {
       velocity.y -= HOVER_ACCEL;
     }
@@ -324,7 +324,7 @@ class Player extends ActiveEntity
   }
 
   public function movement() {
-    isRunning = Math.abs(joystick.getAxis(0)) > JOYSTICK_RUN_THRESHOLD;
+    isRunning = !isUsingJoystick || Math.abs(joystick.getAxis(0)) > JOYSTICK_RUN_THRESHOLD;
     if(isStartingSkid()) {
       isSkidding = true;
     }
