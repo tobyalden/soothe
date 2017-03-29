@@ -23,6 +23,7 @@ class Player extends ActiveEntity
   public static inline var SKID_JUMP_POWER = 7;
   public static inline var WALL_JUMP_POWER = 4.65;
   public static inline var LEDGE_HOP_POWER = 4.10;
+  public static inline var HOP_TIMER = 60;
   public static inline var WALL_STICK_TIME = 10;
   public static inline var JUMP_CANCEL_POWER = 2;
   public static inline var GRAVITY = 0.25;
@@ -75,6 +76,7 @@ class Player extends ActiveEntity
   private var isHovering:Bool;
   private var playerNumber:Int;
   private var wallStickTimer:Int;
+  private var hopTimer:Int;
   private var controls:Map<String, Int>;
 
   private var isUsingJoystick:Bool;
@@ -120,6 +122,7 @@ class Player extends ActiveEntity
       name = "player3";
     }
     wallStickTimer = 0;
+    hopTimer = 0;
     /*sprite.scale = 2;
     width *= 2;
     height *= 2;*/
@@ -217,6 +220,9 @@ class Player extends ActiveEntity
 
   public override function update()
   {
+    if(hopTimer > 0) {
+      hopTimer -= 1;
+    }
     isUsingJoystick = Input.joysticks >= playerNumber;
 
     for(i in 0...100) {
@@ -426,13 +432,7 @@ class Player extends ActiveEntity
     if(isOnGround()) {
       velocity.y = 0;
       if(pressedControl("jump")) {
-        if(isSkidding) {
-          velocity.y = -SKID_JUMP_POWER;
-          velocity.x = WALK_SPEED * -(velocity.x / Math.abs(velocity.x));
-        }
-        else {
           velocity.y = -JUMP_POWER;
-        }
       }
     }
     else if(isOnWall()) {
@@ -443,22 +443,23 @@ class Player extends ActiveEntity
         velocity.y += GRAVITY;
       }
       if(pressedControl("jump")) {
-        velocity.y = -WALL_JUMP_POWER;
-        if(isOnLeftWall()) {
-          if(HXP.scene.collidePoint("walls", x - 1, y - height/2) != null || !checkControl("left")) {
-            velocity.x = RUN_SPEED;
-          }
-          else {
-            velocity.y = -LEDGE_HOP_POWER;
-          }
+        if(isOnLeftWall() && checkControl("right")) {
+          velocity.y = -WALL_JUMP_POWER;
+          velocity.x = RUN_SPEED;
         }
-        else if(isOnRightWall()) {
-          if(HXP.scene.collidePoint("walls", right + 1, y - height/2) != null || !checkControl("right")) {
-            velocity.x = -RUN_SPEED;
-          }
-          else {
-            velocity.y = -LEDGE_HOP_POWER;
-          }
+        else if(isOnRightWall() && checkControl("left")) {
+          velocity.y = -WALL_JUMP_POWER;
+          velocity.x = -RUN_SPEED;
+        }
+      }
+      if((checkControl("up") || pressedControl("jump")) && hopTimer == 0) { // THIS DOESN'T FEEL RIGHT B/C THE VELOCITY SHOULDN'T BE CONTINUALLY APPLIED IF UP IS HELD DOWN - IT SHOULD ACT THE SAME AS IF YOU PRESSED Z, I.E. A ONE-TIME BOOST
+        if(isOnLeftWall() && HXP.scene.collidePoint("walls", x - 1, y - height/4) == null && !checkControl("right")) {
+          velocity.y = -LEDGE_HOP_POWER;
+          hopTimer = HOP_TIMER;
+        }
+        if(isOnRightWall() && HXP.scene.collidePoint("walls", right + 1, y - height/4) == null && !checkControl("left")) {
+          hopTimer = HOP_TIMER;
+          velocity.y = -LEDGE_HOP_POWER;
         }
       }
     }
