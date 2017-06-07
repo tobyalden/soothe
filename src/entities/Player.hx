@@ -33,11 +33,11 @@ class Player extends ActiveEntity
   public static inline var SKID_THRESHOLD = 2.8;
   public static inline var HEAD_BONK_SPEED = 0.5;
 
-  public static inline var HOVER_ACCEL = 0.3;
-  public static inline var HOVER_DECCEL = 0.2;
-  public static inline var MAX_HOVER_SPEED = 3;
-  public static inline var MAX_HOVER_RUN_SPEED = 5;
-  public static inline var HOVER_GRAVITY = 0.2;
+  public static inline var HOVER_ACCEL = 1.8;
+  public static inline var HOVER_DECCEL = 0.77;
+  public static inline var MAX_HOVER_SPEED = 5;
+  public static inline var MAX_HOVER_RUN_SPEED = 2;
+  public static inline var HOVER_GRAVITY = 0;
   public static inline var HOVER_MIN_GRAV_ESCAPE_SPEED = 0.3;
 
   public static inline var JOYSTICK_RUN_THRESHOLD = 0.5;
@@ -74,6 +74,7 @@ class Player extends ActiveEntity
   private var isRunning:Bool;
   private var isSkidding:Bool;
   private var isHovering:Bool;
+  private var canHover:Bool;
   private var playerNumber:Int;
   private var wallStickTimer:Int;
   private var hopTimer:Int;
@@ -106,6 +107,7 @@ class Player extends ActiveEntity
     isSkidding = false;
     isHovering = false;
     isRunning = false;
+    canHover = true;
     this.playerNumber = playerNumber;
     isUsingJoystick = false;
     joystick = Input.joystick(playerNumber - 1);
@@ -230,8 +232,9 @@ class Player extends ActiveEntity
         trace("pressed joystick key " + i);
       }
     }
-
-    if(collide("hovertube", x, y) != null || collide("exit", x, y) != null) {
+    /*if(collide("hovertube", x, y) != null || collide("exit", x, y) != null) {*/
+    isHovering = checkControl("jump") && canHover && (!isOnGround() && !isOnWall() || !pressedControl("jump"));
+    if(isHovering) {
       hoverMovement();
     }
     else {
@@ -433,6 +436,7 @@ class Player extends ActiveEntity
       velocity.y = 0;
       if(pressedControl("jump")) {
           velocity.y = -JUMP_POWER;
+          canHover = false;
       }
     }
     else if(isOnWall()) {
@@ -443,6 +447,7 @@ class Player extends ActiveEntity
         velocity.y += GRAVITY;
       }
       if(pressedControl("jump")) {
+        canHover = false;
         var tryingToJump = (checkControl("up") || pressedControl("jump")) && hopTimer == 0;
         // THIS DOESN'T FEEL RIGHT B/C THE VELOCITY SHOULDN'T BE CONTINUALLY APPLIED IF UP IS HELD DOWN - IT SHOULD ACT THE SAME AS IF YOU PRESSED Z, I.E. A ONE-TIME BOOST
         if(tryingToJump && isOnLeftWall() && HXP.scene.collidePoint("walls", x - 1, y - height/4) == null && !checkControl("right")) {
@@ -461,6 +466,9 @@ class Player extends ActiveEntity
           velocity.y = -WALL_JUMP_POWER;
           velocity.x = -RUN_SPEED;
         }
+        else {
+          canHover = true;
+        }
       }
 
     }
@@ -469,6 +477,9 @@ class Player extends ActiveEntity
         velocity.y = HEAD_BONK_SPEED;
       }
       velocity.y += GRAVITY;
+      if(releasedControl("jump")) {
+        canHover = true;
+      }
     }
 
     if(!isOnGround()) {
@@ -522,6 +533,9 @@ class Player extends ActiveEntity
       else {
         sprite.play("jump");
       }
+    }
+    else if(isHovering) {
+      sprite.play("jump");
     }
     else if(velocity.x != 0) {
       if(isRunning) {
