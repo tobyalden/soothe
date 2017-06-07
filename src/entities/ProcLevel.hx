@@ -172,8 +172,6 @@ class ProcLevel extends Entity
 
   public function placePlayers() {
 			entities.push(new Player(300, 0, 1));
-			entities.push(new Player(300 + 50, 0, 2));
-			entities.push(new Player(300 + 100, 0, 3));
 			entities.push(new Ball(0, 0));
 	}
 

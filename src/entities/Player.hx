@@ -15,7 +15,7 @@ class Player extends ActiveEntity
   public static inline var WALK_TURN_MULTIPLIER = 2;
   public static inline var RUN_TO_WALK_DECCEL = 0.38;
   public static inline var RUN_SPEED = 4.6;
-  public static inline var RUN_ACCEL = 0.08;
+  public static inline var RUN_ACCEL = 0.15;
   public static inline var AIR_ACCEL = 0.18;
   public static inline var AIR_DECCEL = 0.1;
   public static inline var STOP_DECCEL = 0.3;
@@ -27,7 +27,7 @@ class Player extends ActiveEntity
   public static inline var WALL_STICK_TIME = 10;
   public static inline var JUMP_CANCEL_POWER = 2;
   public static inline var GRAVITY = 0.25;
-  public static inline var WALL_GRAVITY = 0.20;
+  public static inline var WALL_GRAVITY = 0.15;
   public static inline var MAX_FALL_SPEED = 10;
   public static inline var MAX_WALL_FALL_SPEED = 6;
   public static inline var SKID_THRESHOLD = 2.8;
@@ -257,8 +257,8 @@ class Player extends ActiveEntity
     if(checkControl("reset")) {
       y = 300;
       getPlayer(1).x = 300;
-      getPlayer(2).x = 350;
-      getPlayer(3).x = 400;
+      /*getPlayer(2).x = 350;
+      getPlayer(3).x = 400;*/
       HXP.scene.getInstance("ball").x = 325;
       HXP.scene.getInstance("ball").y = 325;
     }
@@ -443,25 +443,26 @@ class Player extends ActiveEntity
         velocity.y += GRAVITY;
       }
       if(pressedControl("jump")) {
-        if(isOnLeftWall() && checkControl("right")) {
+        var tryingToJump = (checkControl("up") || pressedControl("jump")) && hopTimer == 0;
+        // THIS DOESN'T FEEL RIGHT B/C THE VELOCITY SHOULDN'T BE CONTINUALLY APPLIED IF UP IS HELD DOWN - IT SHOULD ACT THE SAME AS IF YOU PRESSED Z, I.E. A ONE-TIME BOOST
+        if(tryingToJump && isOnLeftWall() && HXP.scene.collidePoint("walls", x - 1, y - height/4) == null && !checkControl("right")) {
+          velocity.y = -LEDGE_HOP_POWER;
+          hopTimer = HOP_TIMER;
+        }
+        else if(tryingToJump && isOnRightWall() && HXP.scene.collidePoint("walls", right + 1, y - height/4) == null && !checkControl("left")) {
+          hopTimer = HOP_TIMER;
+          velocity.y = -LEDGE_HOP_POWER;
+        }
+        else if(isOnLeftWall()) {
           velocity.y = -WALL_JUMP_POWER;
           velocity.x = RUN_SPEED;
         }
-        else if(isOnRightWall() && checkControl("left")) {
+        else if(isOnRightWall()) {
           velocity.y = -WALL_JUMP_POWER;
           velocity.x = -RUN_SPEED;
         }
       }
-      if((checkControl("up") || pressedControl("jump")) && hopTimer == 0) { // THIS DOESN'T FEEL RIGHT B/C THE VELOCITY SHOULDN'T BE CONTINUALLY APPLIED IF UP IS HELD DOWN - IT SHOULD ACT THE SAME AS IF YOU PRESSED Z, I.E. A ONE-TIME BOOST
-        if(isOnLeftWall() && HXP.scene.collidePoint("walls", x - 1, y - height/4) == null && !checkControl("right")) {
-          velocity.y = -LEDGE_HOP_POWER;
-          hopTimer = HOP_TIMER;
-        }
-        if(isOnRightWall() && HXP.scene.collidePoint("walls", right + 1, y - height/4) == null && !checkControl("left")) {
-          hopTimer = HOP_TIMER;
-          velocity.y = -LEDGE_HOP_POWER;
-        }
-      }
+
     }
     else {
       if(isOnCeiling()) {
@@ -507,9 +508,9 @@ class Player extends ActiveEntity
     /*HXP.camera.x = (x + getPlayer(2).x + getPlayer(3).x)/3 - HXP.halfWidth;
     HXP.camera.y = (y + getPlayer(2).y + getPlayer(3).y)/3 - HXP.halfHeight;*/
 
-    var playerDistance = (otherPlayerDistance(2) + otherPlayerDistance(3) + getPlayer(2).distanceFrom(getPlayer(3)) / 3);
-    HXP.screen.scaleX = Math.max(1, 2 - playerDistance/CAMERA_SCALE_THRESHOLD);
-    HXP.screen.scaleY = Math.max(1, 2 - playerDistance/CAMERA_SCALE_THRESHOLD);
+    /*var playerDistance = (otherPlayerDistance(2) + otherPlayerDistance(3) + getPlayer(2).distanceFrom(getPlayer(3)) / 3);
+    HXP.screen.scaleX = Math.max(1.25, 2 - playerDistance/CAMERA_SCALE_THRESHOLD);
+    HXP.screen.scaleY = Math.max(1.25, 2 - playerDistance/CAMERA_SCALE_THRESHOLD);*/
   }
 
   private function animate()
