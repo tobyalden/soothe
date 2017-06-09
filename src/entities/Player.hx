@@ -50,7 +50,8 @@ class Player extends ActiveEntity
     "up"=>Key.UP,
     "down"=>Key.DOWN,
     "jump"=>Key.Z,
-    "run"=>Key.X
+    "run"=>Key.X,
+    "quit"=>Key.ESCAPE
   ];
 
   public var P2_CONTROLS = [
@@ -125,9 +126,6 @@ class Player extends ActiveEntity
     }
     wallStickTimer = 0;
     hopTimer = 0;
-    /*sprite.scale = 2;
-    width *= 2;
-    height *= 2;*/
 		finishInitializing();
 	}
 
@@ -227,31 +225,7 @@ class Player extends ActiveEntity
     }
     isUsingJoystick = Input.joysticks >= playerNumber;
 
-    for(i in 0...100) {
-      if(joystick.pressed(i)) {
-        trace("pressed joystick key " + i);
-      }
-    }
-    /*if(collide("hovertube", x, y) != null || collide("exit", x, y) != null) {*/
-    isHovering = checkControl("jump") && canHover && (!isOnGround() && !isOnWall() || !pressedControl("jump"));
-    if(isHovering) {
-      hoverMovement();
-    }
-    else {
-      movement();
-    }
-
-    var _exit = collide("exit", x, y);
-    if(_exit != null) {
-      if(pressedControl("jump")) {
-        var exit = cast(_exit, Exit);
-        if(exit.isActivated()) {
-          var level = new ProcLevel(25, 7, exit);
-          HXP.scene.add(level);
-          exit.deactivate();
-        }
-      }
-    }
+    movement();
 
     if(checkControl("quit")) {
       System.exit(0);
@@ -259,11 +233,7 @@ class Player extends ActiveEntity
 
     if(checkControl("reset")) {
       y = 300;
-      getPlayer(1).x = 300;
-      /*getPlayer(2).x = 350;
-      getPlayer(3).x = 400;*/
-      HXP.scene.getInstance("ball").x = 325;
-      HXP.scene.getInstance("ball").y = 325;
+      getPlayer(1).x = 10;
     }
 
     animate();
@@ -276,7 +246,11 @@ class Player extends ActiveEntity
   }
 
   public function hoverMovement() {
-    isRunning = isUsingJoystick || Math.abs(joystick.getAxis(0)) > JOYSTICK_RUN_THRESHOLD || Math.abs(joystick.getAxis(1)) > JOYSTICK_RUN_THRESHOLD;
+    isRunning = (
+      isUsingJoystick
+      || Math.abs(joystick.getAxis(0)) > JOYSTICK_RUN_THRESHOLD
+      || Math.abs(joystick.getAxis(1)) > JOYSTICK_RUN_THRESHOLD
+    );
     if(checkControl("up")) {
       velocity.y -= HOVER_ACCEL;
     }
@@ -333,7 +307,9 @@ class Player extends ActiveEntity
   }
 
   public function movement() {
-    isRunning = !isUsingJoystick || Math.abs(joystick.getAxis(0)) > JOYSTICK_RUN_THRESHOLD;
+    isRunning = (
+      !isUsingJoystick || Math.abs(joystick.getAxis(0)) > JOYSTICK_RUN_THRESHOLD
+    );
     if(isStartingSkid()) {
       isSkidding = true;
     }
@@ -448,13 +424,24 @@ class Player extends ActiveEntity
       }
       if(pressedControl("jump")) {
         canHover = false;
-        var tryingToJump = (checkControl("up") || pressedControl("jump")) && hopTimer == 0;
-        // THIS DOESN'T FEEL RIGHT B/C THE VELOCITY SHOULDN'T BE CONTINUALLY APPLIED IF UP IS HELD DOWN - IT SHOULD ACT THE SAME AS IF YOU PRESSED Z, I.E. A ONE-TIME BOOST
-        if(tryingToJump && isOnLeftWall() && HXP.scene.collidePoint("walls", x - 1, y - height/4) == null && !checkControl("right")) {
+        var tryingToJump = (
+          (checkControl("up") || pressedControl("jump")) && hopTimer == 0
+        );
+        if(
+          tryingToJump
+          && isOnLeftWall()
+          && HXP.scene.collidePoint("walls", x - 1, y - height/4) == null
+          && !checkControl("right")
+        ) {
           velocity.y = -LEDGE_HOP_POWER;
           hopTimer = HOP_TIMER;
         }
-        else if(tryingToJump && isOnRightWall() && HXP.scene.collidePoint("walls", right + 1, y - height/4) == null && !checkControl("left")) {
+        else if(
+          tryingToJump
+          && isOnRightWall()
+          && HXP.scene.collidePoint("walls", right + 1, y - height/4) == null
+          && !checkControl("left")
+        ) {
           hopTimer = HOP_TIMER;
           velocity.y = -LEDGE_HOP_POWER;
         }
@@ -512,16 +499,8 @@ class Player extends ActiveEntity
   }
 
   private function setCamera() {
-
     HXP.camera.x = x - HXP.halfWidth;
     HXP.camera.y = y - HXP.halfHeight;
-
-    /*HXP.camera.x = (x + getPlayer(2).x + getPlayer(3).x)/3 - HXP.halfWidth;
-    HXP.camera.y = (y + getPlayer(2).y + getPlayer(3).y)/3 - HXP.halfHeight;*/
-
-    /*var playerDistance = (otherPlayerDistance(2) + otherPlayerDistance(3) + getPlayer(2).distanceFrom(getPlayer(3)) / 3);
-    HXP.screen.scaleX = Math.max(1.25, 2 - playerDistance/CAMERA_SCALE_THRESHOLD);
-    HXP.screen.scaleY = Math.max(1.25, 2 - playerDistance/CAMERA_SCALE_THRESHOLD);*/
   }
 
   private function animate()

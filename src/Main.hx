@@ -10,11 +10,11 @@ class Main extends Engine
 #if debug
 		HXP.console.enable();
 #end
-		/*HXP.fullscreen = true;*/
-		HXP.screen.smoothing = false;
 		HXP.scene = new GameScene();
 	}
 
-	public static function main() { new Main(); }
+	public static function main() {
+		new Main();
+	}
 
 }

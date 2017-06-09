@@ -26,16 +26,13 @@ class ProcLevel extends Entity
 
   public var levelWidth:Int;
   public var levelHeight:Int;
-  public var entrance:Exit;
   public var xOffset:Float;
   public var yOffset:Float;
 
-  public function new(levelWidth:Int, levelHeight:Int, entrance:Exit) {
+  public function new(levelWidth:Int, levelHeight:Int) {
+    super(0, 0);
     this.levelWidth = levelWidth;
     this.levelHeight = levelHeight;
-    this.entrance = entrance;
-    setLevelOffset();
-    super(xOffset, yOffset);
     map = [for (y in 0...levelHeight) [for (x in 0...levelWidth) 0]];
     entities = new Array<Entity>();
     generateLevel();
@@ -48,21 +45,6 @@ class ProcLevel extends Entity
       entity.x += xOffset;
       entity.y += yOffset;
       HXP.scene.add(entity);
-    }
-  }
-
-  public function setLevelOffset() {
-    xOffset = 0;
-    yOffset = 0;
-    if(entrance == null) {
-      return;
-    }
-    xOffset = entrance.x - entrance.width;
-    if(entrance.getSide() == Exit.TOP) {
-      yOffset = entrance.y - levelHeight * TILE_AND_LEVEL_SCALE * BIGGIFY_SCALE;
-    }
-    else if(entrance.getSide() == Exit.BOTTOM) {
-      yOffset = entrance.y + entrance.height;
     }
   }
 
@@ -130,7 +112,11 @@ class ProcLevel extends Entity
             {
                 var offsetX = x + scaleX + Math.round(TILE_SIZE/2);
                 var offsetY = y + scaleY + Math.round(TILE_SIZE/2);
-                if(offsetX >= 0 && offsetX < levelWidth && offsetY >= 0 && offsetY < levelHeight) {
+                if(
+                  offsetX >= 0 && offsetX < levelWidth
+                  && offsetY >= 0
+                  && offsetY < levelHeight
+                ) {
                   map[offsetY][offsetX] = fill;
                 }
             }
@@ -152,85 +138,29 @@ class ProcLevel extends Entity
     widenPassages();
     removeFloaters();
     createBoundaries();
-    tiles = new Tilemap("graphics/stone.png", TILE_SIZE * this.levelWidth, TILE_SIZE * this.levelHeight, TILE_SIZE, TILE_SIZE);
+    tiles = new Tilemap(
+      "graphics/stone.png",
+      TILE_SIZE * this.levelWidth,
+      TILE_SIZE * this.levelHeight,
+      TILE_SIZE,
+      TILE_SIZE
+    );
     placeWater();
-    placeCoins();
-    placeExits();
-    if(entrance == null) {
-      placePlayers();
-    }
+    placePlayers();
     prettifyMap();
     finishInitializing();
   }
 
-  public function placeCoins() {
-    for(i in 0...50) {
-      var openPoint = pickRandomOpenPoint();
-      entities.push(new Coin(Std.int(openPoint.x) * TILE_AND_LEVEL_SCALE, Std.int(openPoint.y) * TILE_AND_LEVEL_SCALE));
-    }
-  }
-
   public function placePlayers() {
-			entities.push(new Player(300, 0, 1));
-			entities.push(new Ball(0, 0));
+      var point = pickRandomOpenPoint();
+			entities.push(
+        new Player(
+          Math.round(point.x) * TILE_AND_LEVEL_SCALE,
+          Math.round(point.y) * TILE_AND_LEVEL_SCALE,
+          1
+        )
+      );
 	}
-
-  public function placeExits() {
-    var horizontalOffset = Math.round(10 + Math.random() * (levelWidth - 20));
-    if(entrance == null) {
-      horizontalOffset = 10;
-    }
-    for (x in horizontalOffset...(horizontalOffset + 10))
-    {
-      for (y in 0...levelHeight)
-      {
-        map[y][x] = 0;
-        if(entrance != null && y == 0 && entrance.getSide() == Exit.TOP) {
-          map[y][x] = 1;
-        }
-        else if(entrance != null && y == (levelHeight - 1) && entrance.getSide() == Exit.BOTTOM) {
-          map[y][x] = 1;
-        }
-      }
-    }
-    entities.push(new HoverTube(horizontalOffset * TILE_AND_LEVEL_SCALE, 0, 10 * TILE_AND_LEVEL_SCALE, levelHeight * TILE_AND_LEVEL_SCALE));
-    if(entrance == null) {
-      entities.push(new Exit(horizontalOffset * TILE_AND_LEVEL_SCALE, levelHeight * TILE_AND_LEVEL_SCALE, 10 * TILE_AND_LEVEL_SCALE, TILE_AND_LEVEL_SCALE * 10, Exit.BOTTOM));
-      entities.push(new Exit(horizontalOffset * TILE_AND_LEVEL_SCALE, -TILE_AND_LEVEL_SCALE * 10, 10 * TILE_AND_LEVEL_SCALE, TILE_AND_LEVEL_SCALE * 10, Exit.TOP));
-    }
-    else {
-      var secondaryHorizontalOffset = Math.round(10 + Math.random() * (levelWidth - 20));
-      while(Math.abs(secondaryHorizontalOffset - horizontalOffset) < 20) {
-        secondaryHorizontalOffset = Math.round(10 + Math.random() * (levelWidth - 20));
-      }
-      for (x in secondaryHorizontalOffset...(secondaryHorizontalOffset + 10))
-      {
-        for (y in 0...levelHeight)
-        {
-          map[y][x] = 0;
-          if(entrance != null && y == 0 && entrance.getSide() == Exit.BOTTOM) {
-            map[y][x] = 1;
-          }
-          else if(entrance != null && y == (levelHeight - 1) && entrance.getSide() == Exit.TOP) {
-            map[y][x] = 1;
-          }
-        }
-      }
-      entities.push(new HoverTube(secondaryHorizontalOffset * TILE_AND_LEVEL_SCALE, 0, 10 * TILE_AND_LEVEL_SCALE, levelHeight * TILE_AND_LEVEL_SCALE));
-      if(entrance.getSide() != Exit.TOP) {
-        entities.push(new Exit(secondaryHorizontalOffset * TILE_AND_LEVEL_SCALE, levelHeight * TILE_AND_LEVEL_SCALE, 10 * TILE_AND_LEVEL_SCALE, TILE_AND_LEVEL_SCALE * 10, Exit.BOTTOM));
-      }
-      else if(entrance.getSide() != Exit.BOTTOM) {
-        entities.push(new Exit(secondaryHorizontalOffset * TILE_AND_LEVEL_SCALE, -TILE_AND_LEVEL_SCALE * 10, 10 * TILE_AND_LEVEL_SCALE, TILE_AND_LEVEL_SCALE * 10, Exit.TOP));
-      }
-    }
-
-    // OFFSET ENTIRE LEVEL SO EXITS TOUCH
-    x -= (horizontalOffset - 10) * TILE_AND_LEVEL_SCALE;
-    for (entity in entities) {
-      entity.x -= (horizontalOffset - 10) * TILE_AND_LEVEL_SCALE;
-    }
-  }
 
   public function placeWater() {
     for (x in 21...levelWidth - 1)
@@ -259,11 +189,14 @@ class ProcLevel extends Entity
         }
       }
     }
-
   }
 
   public function biggifyMap() {
-    var bigMap = [for (y in 0...levelHeight * BIGGIFY_SCALE) [for (x in 0...levelWidth * BIGGIFY_SCALE) 0]];
+    var bigMap = [
+      for (y in 0...levelHeight * BIGGIFY_SCALE) [
+        for (x in 0...levelWidth * BIGGIFY_SCALE) 0
+      ]
+    ];
     for (x in 0...levelWidth)
     {
       for (y in 0...levelHeight)
@@ -272,7 +205,9 @@ class ProcLevel extends Entity
           {
               for(scaleY in 0...BIGGIFY_SCALE)
               {
-                  bigMap[y * OFFSET_SIZE + scaleY][x * OFFSET_SIZE + scaleX] = map[y][x];
+                  bigMap[y * OFFSET_SIZE + scaleY][x * OFFSET_SIZE + scaleX] = (
+                    map[y][x]
+                  );
               }
           }
       }
@@ -375,7 +310,11 @@ class ProcLevel extends Entity
     public function countRooms()
     {
       var roomCount:Int = 0;
-      var rooms:Array<Array<Int>> = [for (y in 0...levelHeight) [for (x in 0...levelWidth) 0]];
+      var rooms:Array<Array<Int>> = [
+        for (y in 0...levelHeight) [
+          for (x in 0...levelWidth) 0
+        ]
+      ];
       for (x in 0...levelWidth)
       {
         for (y in 0...levelHeight)
@@ -432,7 +371,11 @@ class ProcLevel extends Entity
     public function getRooms()
     {
       var roomCount:Int = 0;
-      var rooms:Array<Array<Int>> = [for (y in 0...levelHeight) [for (x in 0...levelWidth) 0]];
+      var rooms:Array<Array<Int>> = [
+        for (y in 0...levelHeight) [
+          for (x in 0...levelWidth) 0
+        ]
+      ];
       for (x in 0...levelWidth)
       {
         for (y in 0...levelHeight)
@@ -453,7 +396,9 @@ class ProcLevel extends Entity
       while (map[Math.round(randomPoint.y)][Math.round(randomPoint.x)] == 0) {
         randomPoint = pickRandomPoint();
       }
-      openRandomSpaceHelper(Math.round(randomPoint.x), Math.round(randomPoint.y));
+      openRandomSpaceHelper(
+        Math.round(randomPoint.x), Math.round(randomPoint.y)
+      );
     }
 
     public function openRandomSpaceHelper(x:Int, y:Int)
@@ -480,7 +425,7 @@ class ProcLevel extends Entity
 
     public function connectRooms(rooms:Array<Array<Int>>)
     {
-      // I should make it so it just picks all the points in one go...!
+      // TODO: pick all the points in one go
       var p1:Point = null;
       var p2:Point = null;
 
@@ -513,8 +458,10 @@ class ProcLevel extends Entity
         }
         for (y in 0...levelHeight)
         {
-          if(rooms[y][x] != 0 && rooms[y][x] != rooms[Math.round(p1.y)][Math.round(p1.x)])
-          {
+          if(
+            rooms[y][x] != 0
+            && rooms[y][x] != rooms[Math.round(p1.y)][Math.round(p1.x)]
+          ) {
             p2 = new Point(x, y);
             break;
           }
@@ -529,7 +476,8 @@ class ProcLevel extends Entity
       var p1Start:Point = p1.clone();
       var p2Start:Point = p2.clone();
 
-      // Get P2 and P2 as close as possible to each other as possible without leaving the rooms they're in
+      // Get P2 and P2 as close as possible to each other as possible without
+      // leaving the rooms they're in
       for (x in 0...levelWidth)
       {
         for (y in 0...levelHeight)
@@ -593,15 +541,19 @@ class ProcLevel extends Entity
 
     public function pickRandomPoint()
     {
-      var randomPoint = new Point(Math.floor(Math.random()*levelWidth), Math.floor(Math.random()*levelHeight));
+      var randomPoint = new Point(
+        Math.floor(Math.random()*levelWidth),
+        Math.floor(Math.random()*levelHeight)
+      );
       return randomPoint;
     }
 
     public function pickRandomOpenPoint()
     {
       var randomOpenPoint:Point = pickRandomPoint();
-      while(map[Math.round(randomOpenPoint.y)][Math.round(randomOpenPoint.x)] != 0)
-      {
+      while(
+        map[Math.round(randomOpenPoint.y)][Math.round(randomOpenPoint.x)] != 0
+      ) {
         randomOpenPoint = pickRandomPoint();
       }
       return randomOpenPoint;

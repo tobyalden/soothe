@@ -14,7 +14,7 @@ class GameScene extends Scene
 
 	public override function begin()
 	{
-    var level:ProcLevel = new ProcLevel(25, 7, null);
+    var level:ProcLevel = new ProcLevel(25, 25);
 		add(level);
 	}
 
