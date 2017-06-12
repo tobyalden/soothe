@@ -76,6 +76,7 @@ class ProcLevel extends Entity
     placePlayers();
     prettifyMap();
     addEntitiesToScene();
+    findLargestOpenPoint();
   }
 
   public function randomizeMap() {
@@ -507,6 +508,42 @@ class ProcLevel extends Entity
       randomOpenPoint = pickRandomPoint();
     }
     return randomOpenPoint;
+  }
+
+  public function isInMap(checkX:Int, checkY:Int) {
+      return x >= 0 && x < levelWidth && y >= 0 && y < levelHeight;
+    }
+
+  public function findLargestOpenPoint()
+  {
+    var largestRect = ["x"=>0, "y"=>0, "width"=>0, "height"=>0];
+    for (x in 0...levelWidth)
+    {
+      for (y in 0...levelHeight)
+      {
+        var stepX = 0;
+        var stepY = 0;
+        while(true)
+        {
+            trace("beginning loop..");
+            if(isInMap(x + stepX, y) && map[y][x + stepX] == 0) {
+                stepX += 1;
+                trace('stepping to the right');
+            }
+            else if(isInMap(x, y + stepY) && map[y + stepY][x] == 0) {
+               stepY += 1;
+               trace('stepping down');
+            }
+            else {
+                break;
+            }
+        }
+        if(stepX * stepY > largestRect["width"] * largestRect["height"]) {
+            largestRect = ["x"=>x, "y"=>y, "width"=>stepX, "height"=>stepY];
+        }
+      }
+    }
+    trace(largestRect);
   }
 
 }
