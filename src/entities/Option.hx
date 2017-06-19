@@ -39,34 +39,28 @@ class Option extends ActiveEntity
       else {
         destination.x = player.x - HOVER_HEIGHT;
       }
-      moveTowardsDestination();
-    }
-
-    private function moveTowardsDestination() {
       if(Math.abs(x - destination.x) < Math.abs(velocity.x) + ACCEL) {
-        velocity.x = 0;
+        velocity.x /= 2;
         x = destination.x;
       }
-      else if(x < destination.x) {
+      else if(destination.x > x) {
         velocity.x += ACCEL;
       }
       else {
         velocity.x -= ACCEL;
       }
-      if(Math.abs(y - destination.y) < Math.abs(velocity.y) + ACCEL) {
-        velocity.y = 0;
-        y = destination.y;
-      }
-      else if(y < destination.y) {
-        velocity.y += ACCEL;
-      }
-      else {
-        velocity.y -= ACCEL;
-      }
       velocity.x = Math.min(velocity.x, MAX_SPEED);
       velocity.x = Math.max(velocity.x, -MAX_SPEED);
-      velocity.y = Math.min(velocity.y, MAX_SPEED);
-      velocity.y = Math.max(velocity.y, -MAX_SPEED);
-      moveBy(velocity.x, velocity.y);
+
+      x += velocity.x;
+      if(Math.abs(x - player.x) > HOVER_HEIGHT) {
+        if(x > player.x) {
+          x = player.x + HOVER_HEIGHT;
+        }
+        else {
+          x = player.x - HOVER_HEIGHT;
+        }
+      }
+      y = destination.y + Math.sin(bobTimer) * BOB_HEIGHT;
     }
 }
