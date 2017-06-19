@@ -242,7 +242,14 @@ class Player extends ActiveEntity
       setCamera();
     }
 
+    debug();
     super.update();
+  }
+
+  public function debug() {
+    if(Input.check(Key.U)) {
+      y -= 100;
+    }
   }
 
   public function hoverMovement() {

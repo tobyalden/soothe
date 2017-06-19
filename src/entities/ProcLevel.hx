@@ -10,8 +10,7 @@ import com.haxepunk.masks.*;
 class ProcLevel extends Entity
 {
   public static inline var TILE_SIZE = 7;
-  public static inline var LEVEL_SCALE = 3;
-  public static inline var TILE_AND_LEVEL_SCALE = TILE_SIZE * LEVEL_SCALE;
+  /*public static inline var levelScale = 3;*/
   public static inline var BIGGIFY_SCALE = 5;
 
   public static inline var OFFSET_CHANCE = 0.01;
@@ -26,27 +25,35 @@ class ProcLevel extends Entity
 
   public var levelWidth:Int;
   public var levelHeight:Int;
+  public var levelScale:Int;
+  public var hasSubLevel:Bool;
 
-  public function new(levelWidth:Int, levelHeight:Int) {
-    super(0, 0);
+  public function new(x:Int, y:Int, levelWidth:Int, levelHeight:Int, levelScale:Int, hasSubLevel:Bool) {
+    super(x, y);
     this.levelWidth = levelWidth;
     this.levelHeight = levelHeight;
+    this.levelScale = levelScale;
+    this.hasSubLevel = hasSubLevel;
     map = [for (y in 0...levelHeight) [for (x in 0...levelWidth) 0]];
     entities = new Array<Entity>();
     generateLevel();
+    if(hasSubLevel) {
+      createSubLevel();
+    }
+    addEntitiesToScene();
     finishInitializing();
   }
 
   public function finishInitializing() {
-    tiles.scale = LEVEL_SCALE;
+    tiles.scale = levelScale;
     tiles.smooth = false;
     graphic = tiles;
     tiles.loadFrom2DArray(map);
     collisionMask = new Grid(
-      LEVEL_SCALE * levelWidth * TILE_SIZE,
-      LEVEL_SCALE * levelHeight * TILE_SIZE,
-      LEVEL_SCALE * TILE_SIZE,
-      LEVEL_SCALE * TILE_SIZE
+      levelScale * levelWidth * TILE_SIZE,
+      levelScale * levelHeight * TILE_SIZE,
+      levelScale * TILE_SIZE,
+      levelScale * TILE_SIZE
     );
     collisionMask.loadFrom2DArray(map);
     mask = collisionMask;
@@ -72,11 +79,11 @@ class ProcLevel extends Entity
       TILE_SIZE,
       TILE_SIZE
     );
-    placeWater();
-    placePlayers();
+    /*placeWater();*/
+    if(hasSubLevel) {
+      placePlayers();
+    }
     prettifyMap();
-    addEntitiesToScene();
-    findLargestOpenPoint();
   }
 
   public function randomizeMap() {
@@ -210,10 +217,10 @@ class ProcLevel extends Entity
           }
           if(addWater) {
             var water = new Water(
-              x * TILE_AND_LEVEL_SCALE,
-              y * TILE_AND_LEVEL_SCALE + 8,
-              TILE_AND_LEVEL_SCALE * scanX,
-              TILE_AND_LEVEL_SCALE - 8
+              x * TILE_SIZE * levelScale,
+              y * TILE_SIZE * levelScale + 8,
+              TILE_SIZE * levelScale * scanX,
+              TILE_SIZE * levelScale - 8
             );
             entities.push(water);
           }
@@ -224,13 +231,13 @@ class ProcLevel extends Entity
 
   public function placePlayers() {
       var point = pickRandomOpenPoint();
-      entities.push(
-        new Player(
-          Math.round(point.x) * TILE_AND_LEVEL_SCALE,
-          Math.round(point.y) * TILE_AND_LEVEL_SCALE,
-          1
-        )
+      var player = new Player(
+        Math.round(point.x) * TILE_SIZE * levelScale,
+        Math.round(point.y) * TILE_SIZE * levelScale,
+        1
       );
+      entities.push(player);
+      entities.push(new Option(player));
   }
 
   public function prettifyMap() {
@@ -510,40 +517,50 @@ class ProcLevel extends Entity
     return randomOpenPoint;
   }
 
+  public function pickRandomOpenPointWithRoom(roomNeeded:Int)
+  {
+    var randomOpenPoint:Point = pickRandomPoint();
+    while(
+      !isInMap(Math.round(randomOpenPoint.x) + roomNeeded, Math.round(randomOpenPoint.y) + roomNeeded) ||
+      map[Math.round(randomOpenPoint.y)][Math.round(randomOpenPoint.x)] != 0
+    ) {
+      randomOpenPoint = pickRandomPoint();
+    }
+    return randomOpenPoint;
+  }
+
   public function isInMap(checkX:Int, checkY:Int) {
-      return x >= 0 && x < levelWidth && y >= 0 && y < levelHeight;
+      return checkX >= 0 && checkX < levelWidth && checkY >= 0 && checkY < levelHeight;
     }
 
-  public function findLargestOpenPoint()
+  public function createSubLevel()
   {
-    var largestRect = ["x"=>0, "y"=>0, "width"=>0, "height"=>0];
-    for (x in 0...levelWidth)
-    {
-      for (y in 0...levelHeight)
-      {
-        var stepX = 0;
-        var stepY = 0;
-        while(true)
-        {
-            trace("beginning loop..");
-            if(isInMap(x + stepX, y) && map[y][x + stepX] == 0) {
-                stepX += 1;
-                trace('stepping to the right');
-            }
-            else if(isInMap(x, y + stepY) && map[y + stepY][x] == 0) {
-               stepY += 1;
-               trace('stepping down');
-            }
-            else {
-                break;
-            }
-        }
-        if(stepX * stepY > largestRect["width"] * largestRect["height"]) {
-            largestRect = ["x"=>x, "y"=>y, "width"=>stepX, "height"=>stepY];
-        }
+    var point = pickRandomOpenPointWithRoom(50);
+    var largestRect = [
+      "x"=>Math.round(point.x), "y"=>Math.round(point.y),
+      "width"=>50, "height"=>50
+    ];
+    for(x in 0...largestRect["width"]) {
+      for(y in 0...largestRect["height"]) {
+        map[largestRect["y"] + y][largestRect["x"] + x] = 0;
       }
     }
-    trace(largestRect);
+    var largestSpace = new DebugSquare(
+      largestRect["x"] * TILE_SIZE * levelScale,
+      largestRect["y"] * TILE_SIZE * levelScale,
+      largestRect["width"] * TILE_SIZE * levelScale,
+      largestRect["height"] * TILE_SIZE * levelScale
+    );
+    entities.push(largestSpace);
+    var subLevel = new ProcLevel(
+      largestRect["x"] * TILE_SIZE * levelScale,
+      largestRect["y"] * TILE_SIZE * levelScale,
+      largestRect["width"],
+      largestRect["height"],
+      1,
+      false
+    );
+    entities.push(subLevel);
   }
 
 }

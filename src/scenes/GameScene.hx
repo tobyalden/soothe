@@ -6,6 +6,8 @@ import entities.*;
 
 class GameScene extends Scene
 {
+	
+	private var level:ProcLevel;
 
 	public function new()
 	{
@@ -14,7 +16,7 @@ class GameScene extends Scene
 
 	public override function begin()
 	{
-    var level:ProcLevel = new ProcLevel(25, 25);
+    level = new ProcLevel(0, 0, 25, 25, 3, true);
 		add(level);
 	}
 
