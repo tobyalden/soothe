@@ -13,18 +13,20 @@ class Option extends ActiveEntity
     public static inline var BOB_SPEED = 0.1;
     public static inline var BOB_HEIGHT = 2;
 
+    public var bobTimer:Float;
     private var player:Player;
-    private var bobTimer:Float;
     private var destination:Point;
 
     public function new(player:Player)
     {
         super(Math.round(player.x), Math.round(player.y));
         this.player = player;
+        player.option = this;
         destination = new Point(player.x, player.y);
         sprite = new Spritemap("graphics/option.png", 18, 18);
         sprite.add("idle", [0]);
         bobTimer = 0;
+        name = "option";
         finishInitializing();
     }
 
@@ -60,6 +62,11 @@ class Option extends ActiveEntity
           x = player.x - HOVER_HEIGHT;
         }
       }
-      y = destination.y + Math.sin(bobTimer) * BOB_HEIGHT;
+      if(player.isHangingOnOption) {
+        y = destination.y + Math.sin(bobTimer * 2 - 1.53) * BOB_HEIGHT*1.2;
+      }
+      else {
+        y = destination.y + Math.sin(bobTimer) * BOB_HEIGHT;
+      }
     }
 }

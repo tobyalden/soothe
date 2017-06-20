@@ -65,6 +65,9 @@ class Player extends ActiveEntity
     "run"=>Key.W
   ];
 
+  public var option:Option;
+  public var isHangingOnOption:Bool;
+
   private var isRunning:Bool;
   private var isSkidding:Bool;
   private var playerNumber:Int;
@@ -98,6 +101,7 @@ class Player extends ActiveEntity
     setHitbox(12, 24, -2, 0);
     isSkidding = false;
     isRunning = false;
+    isHangingOnOption = false;
     this.playerNumber = playerNumber;
     isUsingJoystick = false;
     joystick = Input.joystick(playerNumber - 1);
@@ -212,7 +216,12 @@ class Player extends ActiveEntity
     }
     isUsingJoystick = Input.joysticks >= playerNumber;
 
-    movement();
+    if(isHangingOnOption) {
+      hangMovement();
+    }
+    else {
+      movement();
+    }
 
     if(checkControl("quit")) {
       System.exit(0);
@@ -400,6 +409,9 @@ class Player extends ActiveEntity
       if(releasedControl("jump") && velocity.y < -JUMP_CANCEL_POWER) {
         velocity.y = -JUMP_CANCEL_POWER;
       }
+      if(pressedControl("jump") && !isOnWall()) {
+        isHangingOnOption = true;
+      }
     }
 
     if(isOnWall()) {
@@ -418,6 +430,33 @@ class Player extends ActiveEntity
 
     moveBy(velocity.x, 0, "walls");
     moveBy(0, velocity.y, "walls");
+  }
+
+  public function hangMovement() {
+    // maybe the moment you grab on it yanks you upward and if you time your jump along with it you can do an infinitely repeatable super jump
+    // but if you keep hanging onto it it'll just glide you downwards
+    if(releasedControl("jump")) {
+      isHangingOnOption = false;
+    }
+    if(checkControl("left")) {
+      velocity.x -= AIR_ACCEL;
+    }
+    else if(checkControl("right")) {
+      velocity.x += AIR_ACCEL;
+    }
+    else {
+      if(velocity.x > 0) {
+        velocity.x = Math.max(velocity.x - AIR_DECCEL, 0);
+      }
+      else {
+        velocity.x = Math.min(velocity.x + AIR_DECCEL, 0);
+      }
+    }
+    velocity.x = Math.min(velocity.x, RUN_SPEED);
+    velocity.x = Math.max(velocity.x, -RUN_SPEED);
+    velocity.y = Math.max(velocity.y - GRAVITY * 1.03, -RUN_SPEED/2);
+    moveBy(velocity.x, 0, "walls");
+    moveBy(0, velocity.y + Math.sin(option.bobTimer * 2) * Option.BOB_HEIGHT/1.5, "walls");
   }
 
   public override function moveCollideX(e:Entity) {
