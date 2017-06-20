@@ -33,13 +33,6 @@ class Player extends ActiveEntity
   public static inline var SKID_THRESHOLD = 2.8;
   public static inline var HEAD_BONK_SPEED = 0.5;
 
-  public static inline var HOVER_ACCEL = 1.8;
-  public static inline var HOVER_DECCEL = 0.77;
-  public static inline var MAX_HOVER_SPEED = 5;
-  public static inline var MAX_HOVER_RUN_SPEED = 2;
-  public static inline var HOVER_GRAVITY = 0;
-  public static inline var HOVER_MIN_GRAV_ESCAPE_SPEED = 0.3;
-
   public static inline var JOYSTICK_RUN_THRESHOLD = 0.5;
 
   public static inline var CAMERA_SCALE_THRESHOLD = 500;
@@ -74,8 +67,6 @@ class Player extends ActiveEntity
 
   private var isRunning:Bool;
   private var isSkidding:Bool;
-  private var isHovering:Bool;
-  private var canHover:Bool;
   private var playerNumber:Int;
   private var wallStickTimer:Int;
   private var hopTimer:Int;
@@ -106,9 +97,7 @@ class Player extends ActiveEntity
     type = "player";
     setHitbox(12, 24, -2, 0);
     isSkidding = false;
-    isHovering = false;
     isRunning = false;
-    canHover = true;
     this.playerNumber = playerNumber;
     isUsingJoystick = false;
     joystick = Input.joystick(playerNumber - 1);
@@ -147,10 +136,8 @@ class Player extends ActiveEntity
         return joystick.check(1);
       }
     }
-    else {
-      if(Input.check(controls[control])) {
-        return true;
-      }
+    if(Input.check(controls[control])) {
+      return true;
     }
     return false;
   }
@@ -250,67 +237,6 @@ class Player extends ActiveEntity
     if(Input.check(Key.U)) {
       y -= 100;
     }
-  }
-
-  public function hoverMovement() {
-    isRunning = (
-      isUsingJoystick
-      || Math.abs(joystick.getAxis(0)) > JOYSTICK_RUN_THRESHOLD
-      || Math.abs(joystick.getAxis(1)) > JOYSTICK_RUN_THRESHOLD
-    );
-    if(checkControl("up")) {
-      velocity.y -= HOVER_ACCEL;
-    }
-    else if(checkControl("down")) {
-      velocity.y += HOVER_ACCEL;
-    }
-    else {
-      if(velocity.y > 0) {
-        velocity.y = Math.max(0, velocity.y - HOVER_DECCEL);
-      }
-      else {
-        velocity.y = Math.min(0, velocity.y + HOVER_DECCEL);
-      }
-    }
-    if(checkControl("left")) {
-      velocity.x -= HOVER_ACCEL;
-    }
-    else if(checkControl("right")) {
-      velocity.x += HOVER_ACCEL;
-    }
-    else {
-      if(velocity.x > 0) {
-        velocity.x = Math.max(0, velocity.x - HOVER_DECCEL);
-      }
-      else {
-        velocity.x = Math.min(0, velocity.x + HOVER_DECCEL);
-      }
-    }
-
-    if(velocity.y < HOVER_MIN_GRAV_ESCAPE_SPEED) {
-      velocity.y += HOVER_GRAVITY;
-    }
-
-    var maxVelocity = MAX_HOVER_SPEED;
-    if(isRunning) {
-      maxVelocity = MAX_HOVER_RUN_SPEED;
-    }
-
-    if(velocity.y > maxVelocity) {
-      velocity.y -= HOVER_ACCEL;
-    }
-    else if(velocity.y < -maxVelocity) {
-      velocity.y += HOVER_ACCEL;
-    }
-
-    if(velocity.x > maxVelocity) {
-      velocity.x -= HOVER_ACCEL;
-    }
-    else if(velocity.x < -maxVelocity) {
-      velocity.x += HOVER_ACCEL;
-    }
-
-    moveBy(velocity.x, velocity.y, "walls");
   }
 
   public function movement() {
@@ -419,7 +345,6 @@ class Player extends ActiveEntity
       velocity.y = 0;
       if(pressedControl("jump")) {
           velocity.y = -JUMP_POWER;
-          canHover = false;
       }
     }
     else if(isOnWall()) {
@@ -430,7 +355,6 @@ class Player extends ActiveEntity
         velocity.y += GRAVITY;
       }
       if(pressedControl("jump")) {
-        canHover = false;
         var tryingToJump = (
           (checkControl("up") || pressedControl("jump")) && hopTimer == 0
         );
@@ -460,9 +384,6 @@ class Player extends ActiveEntity
           velocity.y = -WALL_JUMP_POWER;
           velocity.x = -RUN_SPEED;
         }
-        else {
-          canHover = true;
-        }
       }
 
     }
@@ -472,7 +393,6 @@ class Player extends ActiveEntity
       }
       velocity.y += GRAVITY;
       if(releasedControl("jump")) {
-        canHover = true;
       }
     }
 
@@ -525,9 +445,6 @@ class Player extends ActiveEntity
       else {
         sprite.play("jump");
       }
-    }
-    else if(isHovering) {
-      sprite.play("jump");
     }
     else if(velocity.x != 0) {
       if(isRunning) {
