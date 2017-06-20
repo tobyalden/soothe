@@ -132,19 +132,19 @@ class Player extends ActiveEntity
   private function checkControl(control:String) {
     if(isUsingJoystick) {
       if(control == "left") {
-        return joystick.getAxis(0) < 0;
+        return joystick.getAxis(0) < 0 || Input.joystick(0).hat.x == -1;
       }
       if(control == "right") {
-        return joystick.getAxis(0) > 0;
+        return joystick.getAxis(0) >  0 || Input.joystick(0).hat.x == 1;
       }
       if(control == "up") {
-        return joystick.getAxis(1) < 0;
+        return joystick.getAxis(1) < 0 || Input.joystick(0).hat.y == -1;
       }
       if(control == "down") {
-        return joystick.getAxis(1) > 0;
+        return joystick.getAxis(1) > 0 || Input.joystick(0).hat.y == 1;
       }
       if(control == "jump") {
-        return joystick.check(4) || joystick.check(1);
+        return joystick.check(1);
       }
     }
     else {
@@ -315,7 +315,7 @@ class Player extends ActiveEntity
 
   public function movement() {
     isRunning = (
-      !isUsingJoystick || Math.abs(joystick.getAxis(0)) > JOYSTICK_RUN_THRESHOLD
+      !isUsingJoystick || Math.abs(joystick.getAxis(0)) > JOYSTICK_RUN_THRESHOLD || Input.joystick(0).hat.x != 0 || Input.joystick(0).hat.y != 0
     );
     if(isStartingSkid()) {
       isSkidding = true;

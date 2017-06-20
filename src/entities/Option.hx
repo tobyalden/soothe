@@ -32,7 +32,6 @@ class Option extends ActiveEntity
     {
       bobTimer += BOB_SPEED;
       destination.y = player.y - HOVER_HEIGHT;
-      /*destination.y = player.y - HOVER_HEIGHT + Math.sin(bobTimer) * BOB_HEIGHT;*/
       if(player.sprite.flipped) {
         destination.x = player.x + HOVER_HEIGHT;
       }
