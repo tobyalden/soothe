@@ -28,7 +28,8 @@ class Option extends ActiveEntity
         destination = new Point(player.x, player.y);
         sprite = new Spritemap("graphics/option.png", 18, 18);
         setHitbox(18, 18);
-        sprite.add("idle", [0]);
+        sprite.add("idle", [0, 1, 2, 3], 2);
+        sprite.add("carrying", [0, 3], 4);
         bobTimer = 0;
         name = "option";
         finishInitializing();
@@ -39,9 +40,11 @@ class Option extends ActiveEntity
       bobTimer += BOB_SPEED;
       if(player.isHangingOnOption) {
         destination.y = player.y - HOVER_HEIGHT + 5;
+        sprite.play("carrying");
       }
       else {
         destination.y = player.y - HOVER_HEIGHT;
+        sprite.play("idle");
       }
       if(player.isHangingOnOption && player.sprite.flipped) {
         destination.x = player.centerX;
@@ -50,10 +53,10 @@ class Option extends ActiveEntity
         destination.x = player.centerX - width;
       }
       else if(player.sprite.flipped) {
-        destination.x = player.x + HOVER_HEIGHT;
+        destination.x = player.centerX - halfWidth + HOVER_HEIGHT;
       }
       else {
-        destination.x = player.x - HOVER_HEIGHT;
+        destination.x = player.centerX - halfWidth - HOVER_HEIGHT;
       }
       if(Math.abs(x - destination.x) < Math.abs(velocity.x) + ACCEL) {
         velocity.x /= 2;
@@ -69,7 +72,7 @@ class Option extends ActiveEntity
       velocity.x = Math.max(velocity.x, -MAX_SPEED);
 
       x += velocity.x;
-      if(Math.abs(x - player.x) > Math.abs(destination.x - player.x)) {
+      if(Math.abs(x - player.x) > Math.abs(destination.x - player.x) + 0.1) {
         x = destination.x;
       }
       if(player.isHangingOnOption) {
