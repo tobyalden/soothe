@@ -16,14 +16,18 @@ class Option extends ActiveEntity
     public var bobTimer:Float;
     private var player:Player;
     private var destination:Point;
+    private var permissableDistance:Float = HOVER_HEIGHT;
+
 
     public function new(player:Player)
     {
         super(Math.round(player.x), Math.round(player.y));
         this.player = player;
         player.option = this;
+        permissableDistance = HOVER_HEIGHT;
         destination = new Point(player.x, player.y);
         sprite = new Spritemap("graphics/option.png", 18, 18);
+        setHitbox(18, 18);
         sprite.add("idle", [0]);
         bobTimer = 0;
         name = "option";
@@ -33,8 +37,19 @@ class Option extends ActiveEntity
     public override function update()
     {
       bobTimer += BOB_SPEED;
-      destination.y = player.y - HOVER_HEIGHT;
-      if(player.sprite.flipped) {
+      if(player.isHangingOnOption) {
+        destination.y = player.y - HOVER_HEIGHT + 5;
+      }
+      else {
+        destination.y = player.y - HOVER_HEIGHT;
+      }
+      if(player.isHangingOnOption && player.sprite.flipped) {
+        destination.x = player.centerX;
+      }
+      else if(player.isHangingOnOption) {
+        destination.x = player.centerX - width;
+      }
+      else if(player.sprite.flipped) {
         destination.x = player.x + HOVER_HEIGHT;
       }
       else {
@@ -54,16 +69,11 @@ class Option extends ActiveEntity
       velocity.x = Math.max(velocity.x, -MAX_SPEED);
 
       x += velocity.x;
-      if(Math.abs(x - player.x) > HOVER_HEIGHT) {
-        if(x > player.x) {
-          x = player.x + HOVER_HEIGHT;
-        }
-        else {
-          x = player.x - HOVER_HEIGHT;
-        }
+      if(Math.abs(x - player.x) > Math.abs(destination.x - player.x)) {
+        x = destination.x;
       }
       if(player.isHangingOnOption) {
-        y = destination.y + Math.sin(bobTimer * 2 - 1.53) * BOB_HEIGHT*1.2;
+        y = destination.y + Math.sin(bobTimer * 2) * BOB_HEIGHT*1.2;
       }
       else {
         y = destination.y + Math.sin(bobTimer) * BOB_HEIGHT;

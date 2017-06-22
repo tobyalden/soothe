@@ -411,6 +411,7 @@ class Player extends ActiveEntity
       }
       if(pressedControl("jump") && !isOnWall()) {
         isHangingOnOption = true;
+        option.bobTimer = 1;
       }
     }
 
