@@ -12,7 +12,7 @@ class Luster extends ActiveEntity
     public static inline var BOB_SPEED = 0.3;
     public static inline var BOB_HEIGHT = 1;
     public static inline var MISSILE_SPEED = 6;
-    public static inline var SHOT_COOLDOWN = 8;
+    public static inline var SHOT_COOLDOWN = 20;
 
     public var bobTimer:Float;
     public var destination:Point;
@@ -60,7 +60,7 @@ class Luster extends ActiveEntity
         cooldownTimer -= 1;
       }
       else {
-        scene.add(new Missile(centerX - 3, centerY, new Point(0, MISSILE_SPEED)));
+        scene.add(new Missile(centerX - 6, centerY, new Point(0, MISSILE_SPEED)));
         cooldownTimer = SHOT_COOLDOWN;
       }
     }

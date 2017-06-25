@@ -9,7 +9,8 @@ class Missile extends Bullet {
   {
       super(x, y, velocity);
       type = "bullet";
-      graphic = new Image("graphics/missile.png");
+      var image = new Image("graphics/missile.png");
+      graphic = image;
       setHitboxTo(graphic);
   }
 }
