@@ -46,6 +46,9 @@ class Option extends ActiveEntity
     {
       super.update();
       bobTimer += BOB_SPEED;
+      if(bobTimer > Math.PI*4) {
+        bobTimer -= Math.PI*4;
+      }
       if(player.isHangingOnOption) {
         destination.y = player.y - HOVER_HEIGHT + 5;
         sprite.play("carrying");
@@ -123,6 +126,7 @@ class Option extends ActiveEntity
           );
           /*scene.add(new Bullet(centerX, centerY - 1, new Point(Math.min(-BULLET_SPEED + player.velocity.x, -BULLET_SPEED*0.75), player.velocity.y + Math.sin(bobTimer) * BOB_HEIGHT)));*/
           // cool sine whip pattern! ^
+          // also cool is shooting so many bullets it's like a steady stream
         }
         else {
           scene.add(

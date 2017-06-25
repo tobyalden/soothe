@@ -22,6 +22,7 @@ class ProcLevel extends Entity
   private var tiles:Tilemap;
   private var collisionMask:Grid;
   public var entities:Array<Entity>;
+  public var player:Player;
 
   public var levelWidth:Int;
   public var levelHeight:Int;
@@ -236,6 +237,7 @@ class ProcLevel extends Entity
         Math.round(point.y) * TILE_SIZE * levelScale,
         1
       );
+      this.player = player;
       entities.push(player);
       entities.push(new Option(player));
       entities.push(new Sword(player));

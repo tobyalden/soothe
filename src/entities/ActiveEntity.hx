@@ -32,7 +32,7 @@ class ActiveEntity extends Entity
     public override function update()
     {
         super.update();
-        unstuck();
+        /*unstuck();*/ 
     }
 
     public function getPositionOnScreen()

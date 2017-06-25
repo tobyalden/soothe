@@ -22,6 +22,9 @@ class GameScene extends Scene
 	}
 
   public override function update() {
+		if(Input.pressed(Key.L)) {
+			add(new Luster(Math.round(level.player.x - 50), Math.round(level.player.y)));
+		}
     if(Input.pressed(Key.P)) {
       HXP.scene = new GameScene();
     }
