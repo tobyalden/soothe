@@ -89,7 +89,7 @@ class Option extends ActiveEntity
         y = destination.y + Math.sin(bobTimer) * BOB_HEIGHT;
       }
 
-      if(player.pressedControl("shoot")) {
+      if(player.pressedControl("shoot") || player.isHangingOnOption) {
         if(player.checkControl("left")) {
           shootingFlipped = true;
         }
@@ -102,6 +102,9 @@ class Option extends ActiveEntity
       }
 
       if(player.checkControl("shoot")) {
+        if(player.isHangingOnOption) {
+          return;
+        }
         if(cooldownTimer != 0) {
           cooldownTimer -= 1;
           return;
