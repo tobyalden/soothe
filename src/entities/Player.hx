@@ -27,9 +27,11 @@ class Player extends ActiveEntity
   public static inline var WALL_STICK_TIME = 10;
   public static inline var JUMP_CANCEL_POWER = 2;
   public static inline var GRAVITY = 0.25;
-  public static inline var WALL_GRAVITY = 0.15;
+  public static inline var WALL_GRAVITY = 0.1;
+  /*public static inline var WALL_GRAVITY = 0.15;*/
   public static inline var MAX_FALL_SPEED = 10;
-  public static inline var MAX_WALL_FALL_SPEED = 6;
+  public static inline var MAX_WALL_FALL_SPEED = 5;
+  /*public static inline var MAX_WALL_FALL_SPEED = 6;*/
   public static inline var SKID_THRESHOLD = 2.8;
   public static inline var HEAD_BONK_SPEED = 0.5;
 
