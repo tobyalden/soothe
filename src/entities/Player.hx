@@ -484,12 +484,6 @@ class Player extends ActiveEntity
   private function setCamera() {
     HXP.camera.x = x - HXP.halfWidth;
     HXP.camera.y = y - HXP.halfHeight;
-    if(Input.check(Key.DIGIT_0)) {
-      HXP.screen.scale = Math.max(0.1, HXP.screen.scale - 0.025);
-    }
-    else {
-      HXP.screen.scale = 1;
-    }
   }
 
   private function animate()

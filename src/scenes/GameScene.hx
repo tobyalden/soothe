@@ -2,6 +2,7 @@ package scenes;
 
 import com.haxepunk.*;
 import com.haxepunk.utils.*;
+import com.haxepunk.screen.*;
 import entities.*;
 
 class GameScene extends Scene
@@ -24,6 +25,12 @@ class GameScene extends Scene
     if(Input.pressed(Key.P)) {
       HXP.scene = new GameScene();
     }
+		if(Input.check(Key.DIGIT_0)) {
+			HXP.screen.scale = Math.max(0.1, HXP.screen.scale - 0.025);
+		}
+		else {
+			HXP.screen.scale = 4;
+		}
     super.update();
   }
 
