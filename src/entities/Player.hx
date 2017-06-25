@@ -43,7 +43,7 @@ class Player extends ActiveEntity
     "up"=>Key.UP,
     "down"=>Key.DOWN,
     "jump"=>Key.Z,
-    "run"=>Key.X,
+    "shoot"=>Key.X,
     "quit"=>Key.ESCAPE
   ];
 
@@ -122,7 +122,7 @@ class Player extends ActiveEntity
 		finishInitializing();
 	}
 
-  private function checkControl(control:String) {
+  public function checkControl(control:String) {
     if(isUsingJoystick) {
       if(control == "left") {
         return joystick.getAxis(0) < 0 || Input.joystick(0).hat.x == -1;
@@ -146,7 +146,7 @@ class Player extends ActiveEntity
     return false;
   }
 
-  private function pressedControl(control:String) {
+  public function pressedControl(control:String) {
     if(isUsingJoystick) {
       if(control == "jump") {
         return joystick.pressed(4) ||  joystick.pressed(1);
@@ -160,7 +160,7 @@ class Player extends ActiveEntity
     return false;
   }
 
-  private function releasedControl(control:String) {
+  public function releasedControl(control:String) {
     if(isUsingJoystick) {
       if(control == "jump") {
         return joystick.released(4) || joystick.released(1);

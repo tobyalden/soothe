@@ -12,12 +12,15 @@ class Option extends ActiveEntity
     public static inline var HOVER_HEIGHT = 20;
     public static inline var BOB_SPEED = 0.1;
     public static inline var BOB_HEIGHT = 2;
+    public static inline var BULLET_SPEED = 6;
 
     public var bobTimer:Float;
     private var player:Player;
     private var destination:Point;
     private var permissableDistance:Float = HOVER_HEIGHT;
+    private var shootingFlipped:Bool;
 
+    // maybe if you're carrying the player you can only shoot upwards
 
     public function new(player:Player)
     {
@@ -31,6 +34,7 @@ class Option extends ActiveEntity
         sprite.add("idle", [0, 1, 2, 3], 2);
         sprite.add("carrying", [0, 3], 4);
         bobTimer = 0;
+        shootingFlipped = false;
         name = "option";
         finishInitializing();
     }
@@ -80,6 +84,19 @@ class Option extends ActiveEntity
       }
       else {
         y = destination.y + Math.sin(bobTimer) * BOB_HEIGHT;
+      }
+
+      if(player.pressedControl("shoot")) {
+        shootingFlipped = player.sprite.flipped;
+      }
+
+      if(player.checkControl("shoot")) {
+        if(shootingFlipped) {
+          scene.add(new Bullet(centerX, centerY - 1, new Point(-BULLET_SPEED, 0)));
+        }
+        else {
+          scene.add(new Bullet(centerX, centerY - 1, new Point(BULLET_SPEED, 0)));
+        }
       }
     }
 }
