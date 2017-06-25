@@ -13,12 +13,14 @@ class Option extends ActiveEntity
     public static inline var BOB_SPEED = 0.1;
     public static inline var BOB_HEIGHT = 2;
     public static inline var BULLET_SPEED = 6;
+    public static inline var SHOT_COOLDOWN = 8;
 
     public var bobTimer:Float;
     private var player:Player;
     private var destination:Point;
     private var permissableDistance:Float = HOVER_HEIGHT;
     private var shootingFlipped:Bool;
+    private var cooldownTimer:Int;
 
     // maybe if you're carrying the player you can only shoot upwards
 
@@ -27,6 +29,7 @@ class Option extends ActiveEntity
         super(Math.round(player.x), Math.round(player.y));
         this.player = player;
         player.option = this;
+        cooldownTimer = 0;
         permissableDistance = HOVER_HEIGHT;
         destination = new Point(player.x, player.y);
         sprite = new Spritemap("graphics/option.png", 18, 18);
@@ -87,16 +90,49 @@ class Option extends ActiveEntity
       }
 
       if(player.pressedControl("shoot")) {
-        shootingFlipped = player.sprite.flipped;
+        if(player.checkControl("left")) {
+          shootingFlipped = true;
+        }
+        else if(player.checkControl("right")) {
+          shootingFlipped = false;
+        }
+        else {
+          shootingFlipped = player.sprite.flipped;
+        }
       }
 
       if(player.checkControl("shoot")) {
+        if(cooldownTimer != 0) {
+          cooldownTimer -= 1;
+          return;
+        }
         if(shootingFlipped) {
-          scene.add(new Bullet(centerX, centerY - 1, new Point(-BULLET_SPEED, 0)));
+          scene.add(
+            new Bullet(
+              centerX,
+              centerY - 1,
+              new Point(
+                Math.min(-BULLET_SPEED + player.velocity.x, -BULLET_SPEED*0.75),
+                player.velocity.y/2
+              )
+            )
+          );
+          /*scene.add(new Bullet(centerX, centerY - 1, new Point(Math.min(-BULLET_SPEED + player.velocity.x, -BULLET_SPEED*0.75), player.velocity.y + Math.sin(bobTimer) * BOB_HEIGHT)));*/
+          // cool sine whip pattern! ^
         }
         else {
-          scene.add(new Bullet(centerX, centerY - 1, new Point(BULLET_SPEED, 0)));
+          scene.add(
+            new Bullet(
+              centerX,
+              centerY - 1,
+              new Point(
+                Math.max(BULLET_SPEED + player.velocity.x, BULLET_SPEED*0.75),
+                player.velocity.y/2
+              )
+            )
+          );
         }
+        cooldownTimer = SHOT_COOLDOWN;
       }
     }
 }

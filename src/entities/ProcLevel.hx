@@ -80,9 +80,9 @@ class ProcLevel extends Entity
       TILE_SIZE
     );
     /*placeWater();*/
-    if(hasSubLevel) {
+    /*if(hasSubLevel) {*/
       placePlayers();
-    }
+    /*}*/
     prettifyMap();
   }
 
