@@ -238,6 +238,7 @@ class ProcLevel extends Entity
       );
       entities.push(player);
       entities.push(new Option(player));
+      entities.push(new Sword(player));
   }
 
   public function prettifyMap() {

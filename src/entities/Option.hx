@@ -44,6 +44,7 @@ class Option extends ActiveEntity
 
     public override function update()
     {
+      super.update();
       bobTimer += BOB_SPEED;
       if(player.isHangingOnOption) {
         destination.y = player.y - HOVER_HEIGHT + 5;
@@ -89,19 +90,19 @@ class Option extends ActiveEntity
         y = destination.y + Math.sin(bobTimer) * BOB_HEIGHT;
       }
 
-      if(player.pressedControl("shoot") || player.isHangingOnOption) {
+      /*if(player.pressedControl("action") || player.isHangingOnOption) {*/
         if(player.checkControl("left")) {
           shootingFlipped = true;
         }
         else if(player.checkControl("right")) {
           shootingFlipped = false;
         }
-        else {
+        /*else {
           shootingFlipped = player.sprite.flipped;
         }
-      }
+      }*/ // maybe this could be a powerup
 
-      if(player.checkControl("shoot")) {
+      if(player.checkControl("action")) {
         if(player.isHangingOnOption) {
           return;
         }

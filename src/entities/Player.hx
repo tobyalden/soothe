@@ -43,7 +43,7 @@ class Player extends ActiveEntity
     "up"=>Key.UP,
     "down"=>Key.DOWN,
     "jump"=>Key.Z,
-    "shoot"=>Key.X,
+    "action"=>Key.X,
     "quit"=>Key.ESCAPE
   ];
 
@@ -66,6 +66,7 @@ class Player extends ActiveEntity
   ];
 
   public var option:Option;
+  public var sword:Sword;
   public var isHangingOnOption:Bool;
 
   private var isRunning:Bool;
@@ -139,6 +140,9 @@ class Player extends ActiveEntity
       if(control == "jump") {
         return joystick.check(1);
       }
+      if(control == "action") {
+        return joystick.check(0);
+      }
     }
     if(Input.check(controls[control])) {
       return true;
@@ -147,10 +151,19 @@ class Player extends ActiveEntity
   }
 
   public function pressedControl(control:String) {
+    /*for (i in 0...100) {
+      if(joystick.pressed(i)) {
+        trace(i + "pressed!");
+      }
+    }*/
     if(isUsingJoystick) {
       if(control == "jump") {
         return joystick.pressed(4) ||  joystick.pressed(1);
       }
+      if(control == "action") {
+        return joystick.pressed(0);
+      }
+
     }
     else {
       if(Input.pressed(controls[control])) {
@@ -164,6 +177,9 @@ class Player extends ActiveEntity
     if(isUsingJoystick) {
       if(control == "jump") {
         return joystick.released(4) || joystick.released(1);
+      }
+      if(control == "action") {
+        return joystick.released(0);
       }
     }
     else {
