@@ -22,6 +22,7 @@ class GameScene extends Scene
 	}
 
   public override function update() {
+		Timer.updateAll();
 		if(Input.pressed(Key.L)) {
 			add(new Luster(Math.round(level.player.x - 50), Math.round(level.player.y)));
 		}

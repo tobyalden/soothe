@@ -7,12 +7,22 @@ import com.haxepunk.graphics.Spritemap;
 
 class ActiveEntity extends Entity
 {
+
+    public static inline var DEFAULT_FLASH_COLOR = 0xFF0000;
+    public static inline var DEFAULT_FLASH_SPEED = 0.2;
+
     private var sprite:Spritemap;
     private var velocity:Point;
+    private var flashColor:Int;
+    private var flashTimer:Float;
+    private var isFlashing:Bool;
 
     public function new(x:Int, y:Int)
     {
         super(x, y);
+        flashColor = 0xFF0000;
+        isFlashing = false;
+        flashTimer = 0;
         velocity = new Point(0, 0);
     }
 
@@ -29,11 +39,36 @@ class ActiveEntity extends Entity
         graphic = sprite;
     }
 
+    public function startFlashing() {
+      flashTimer = 0;
+      isFlashing = true;
+    }
+
+    public function stopFlashing() {
+      isFlashing = false;
+      sprite.color = 0xFFFFFF;
+    }
+
     public override function update()
     {
         super.update();
-        /*unstuck();*/ 
+        if(isFlashing) {
+          flashTimer += DEFAULT_FLASH_SPEED;
+          if(flashTimer > Math.PI*4) {
+            flashTimer -= Math.PI*4;
+          }
+          sprite.color = HXP.colorLerp(flashColor, 0xFFFFFF, Math.abs(Math.sin(flashTimer)));
+        }
+        else {
+          flashTimer = 0;
+        }
+        /*unstuck();*/
     }
+
+    /*public function flash(flashColor:Int=0xFF0000) {
+      this.flashColor = flashColor;
+      isFlashing = true;
+    }*/
 
     public function getPositionOnScreen()
     {
