@@ -21,6 +21,7 @@ class Sword extends ActiveEntity
     {
         super(Math.round(player.x), Math.round(player.y));
         this.player = player;
+        type = "sword";
         player.sword = this;
         inputBuffer = false;
         cooldownTimer = 0;
@@ -39,6 +40,10 @@ class Sword extends ActiveEntity
       super.update();
       if(cooldownTimer != 0) {
         cooldownTimer -= 1;
+        collidable = true;
+      }
+      else {
+        collidable = false;
       }
       if(player.pressedControl("action") || inputBuffer) {
         if(cooldownTimer == 0) {

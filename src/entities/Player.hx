@@ -264,8 +264,12 @@ class Player extends ActiveEntity
       setCamera();
     }
 
-    if(collideTypes(["enemy", "missile"], x, y) != null) {
+    var damager = collideTypes(["enemy", "missile"], x, y);
+    if(damager != null) {
       takeDamage();
+      if(damager.type == "missile") {
+        scene.remove(damager);
+      }
     }
 
     debug();
