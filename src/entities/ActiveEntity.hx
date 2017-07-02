@@ -47,12 +47,19 @@ class ActiveEntity extends Entity
     public function stopFlashing() {
       isFlashing = false;
       sprite.color = 0xFFFFFF;
+      visible = true;
     }
 
     public override function update()
     {
         super.update();
         if(isFlashing) {
+          if(flashTimer%Math.PI < 1) {
+            visible = false;
+          }
+          else {
+            visible = true;
+          }
           flashTimer += DEFAULT_FLASH_SPEED;
           if(flashTimer > Math.PI*4) {
             flashTimer -= Math.PI*4;

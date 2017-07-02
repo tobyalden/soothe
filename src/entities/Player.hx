@@ -41,6 +41,9 @@ class Player extends ActiveEntity
 
   public static inline var INVINCIBILITY_DURATION = 50;
 
+  public static inline var HIT_VELOCITY_X = 4;
+  public static inline var HIT_VELOCITY_Y = 2;
+
   public var P1_CONTROLS = [
     "left"=>Key.LEFT,
     "right"=>Key.RIGHT,
@@ -266,7 +269,9 @@ class Player extends ActiveEntity
 
     var damager = collideTypes(["enemy", "missile"], x, y);
     if(damager != null) {
-      takeDamage();
+      if(!invincible.isActive()) {
+        takeDamage(damager);
+      }
       if(damager.type == "missile") {
         scene.remove(damager);
       }
@@ -385,7 +390,7 @@ class Player extends ActiveEntity
     }
 
     if(isOnGround()) {
-      velocity.y = 0;
+      velocity.y = Math.min(velocity.y, 0);
       if(pressedControl("jump")) {
           velocity.y = -JUMP_POWER;
       }
@@ -494,10 +499,20 @@ class Player extends ActiveEntity
     moveBy(0, velocity.y + Math.sin(option.bobTimer * 2) * Option.BOB_HEIGHT/1.5, "walls");
   }
 
-  public function takeDamage() {
-    if(!invincible.isActive()) {
-      invincible.restart();
-      startFlashing();
+  public function takeDamage(damager:Entity) {
+    invincible.restart();
+    startFlashing();
+    if(x < damager.x)
+    {
+      velocity.x += -HIT_VELOCITY_X;
+    }
+    else
+    {
+      velocity.x += HIT_VELOCITY_X;
+    }
+    if(isOnGround()) {
+      trace("boop!");
+      velocity.y = -HIT_VELOCITY_Y;
     }
   }
 
