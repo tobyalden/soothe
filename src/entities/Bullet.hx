@@ -24,25 +24,23 @@ class Bullet extends Entity
 
     public override function moveCollideX(e:Entity)
     {
+      if(e.type == "walls" || e.type == "enemy") {
         scene.remove(this);
+      }
         return true;
     }
 
     public override function moveCollideY(e:Entity)
     {
-        scene.remove(this);
+        if(e.type == "walls" || e.type == "enemy") {
+          scene.remove(this);
+        }
         return true;
     }
 
     public override function update()
     {
-        super.update();
         moveBy(velocity.x, velocity.y, "walls");
-        /*velocity.y += GRAVITY;*/
-        var enemy = collide('enemy', x, y);
-        if(enemy != null)
-        {
-          scene.remove(this);
-        }
+        super.update();
     }
 }

@@ -30,6 +30,7 @@ class Luster extends ActiveEntity
         sprite.add("idle", [0]);
         sprite.add("shoot", [1]);
         sprite.play("idle");
+        type = "enemy";
         finishInitializing();
     }
 
