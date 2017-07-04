@@ -39,7 +39,7 @@ class Luster extends ActiveEntity
       var player = HXP.scene.getInstance("player1");
       destination.x = player.centerX - halfWidth;
       destination.y = player.centerY - halfHeight - HOVER_HEIGHT;
-      moveTowards(destination.x, destination.y, CHASE_SPEED);
+      moveTowards(destination.x, destination.y, CHASE_SPEED, "enemy");
       if(distanceToPoint(destination.x, destination.y, true) < 50) {
         sprite.play("shoot");
         shoot();
@@ -51,6 +51,9 @@ class Luster extends ActiveEntity
       bobTimer += BOB_SPEED;
       if(bobTimer > Math.PI*4) {
         bobTimer -= Math.PI*4;
+      }
+      if(collide("sword", x, y) != null) {
+        scene.remove(this);
       }
       super.update();
     }
