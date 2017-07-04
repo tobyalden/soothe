@@ -511,7 +511,6 @@ class Player extends ActiveEntity
       velocity.x += HIT_VELOCITY_X;
     }
     if(isOnGround()) {
-      trace("boop!");
       velocity.y = -HIT_VELOCITY_Y;
     }
   }

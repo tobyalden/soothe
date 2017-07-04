@@ -53,6 +53,7 @@ class Luster extends ActiveEntity
         bobTimer -= Math.PI*4;
       }
       if(collide("sword", x, y) != null) {
+        scene.add(new Explosion(this));
         scene.remove(this);
       }
       super.update();
