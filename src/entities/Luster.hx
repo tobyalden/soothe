@@ -53,10 +53,19 @@ class Luster extends ActiveEntity
         bobTimer -= Math.PI*4;
       }
       if(collide("sword", x, y) != null) {
-        scene.add(new Explosion(this));
-        scene.remove(this);
+        die();
+      }
+      var bullet = collide("bullet", x, y);
+      if(bullet != null) {
+        health -= 10;
+        scene.remove(bullet);
       }
       super.update();
+    }
+
+    override public function die() {
+      scene.add(new Explosion(this));
+      scene.remove(this);
     }
 
     private function shoot()

@@ -16,10 +16,12 @@ class ActiveEntity extends Entity
     private var flashColor:Int;
     private var flashTimer:Float;
     private var isFlashing:Bool;
+    private var health:Int;
 
-    public function new(x:Int, y:Int)
+    public function new(x:Int, y:Int, health:Int=100)
     {
         super(x, y);
+        this.health = health;
         flashColor = 0xFF0000;
         isFlashing = false;
         flashTimer = 0;
@@ -70,12 +72,19 @@ class ActiveEntity extends Entity
           flashTimer = 0;
         }
         /*unstuck();*/
+        if(health <= 0) {
+          die();
+        }
     }
 
     /*public function flash(flashColor:Int=0xFF0000) {
       this.flashColor = flashColor;
       isFlashing = true;
     }*/
+
+    public function die() {
+      scene.remove(this);
+    }
 
     public function getPositionOnScreen()
     {

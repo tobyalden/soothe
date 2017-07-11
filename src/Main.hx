@@ -17,7 +17,7 @@ class Main extends Engine
 	public static function main() {
 		new Main();
 		HXP.screen.scaleMode = new FixedScaleMode();
-		/*HXP.fullscreen = true;*/
+		HXP.fullscreen = true;
 	}
 
 }

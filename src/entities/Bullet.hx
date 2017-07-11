@@ -24,7 +24,7 @@ class Bullet extends Entity
 
     public override function moveCollideX(e:Entity)
     {
-      if(e.type == "walls" || e.type == "enemy") {
+      if(e.type == "walls") {
         scene.remove(this);
       }
         return true;
@@ -32,7 +32,7 @@ class Bullet extends Entity
 
     public override function moveCollideY(e:Entity)
     {
-        if(e.type == "walls" || e.type == "enemy") {
+        if(e.type == "walls") {
           scene.remove(this);
         }
         return true;
