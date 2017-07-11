@@ -86,8 +86,6 @@ class Player extends ActiveEntity
   private var isUsingJoystick:Bool;
   private var joystick:Joystick;
 
-  private var invincible:Timer;
-
 	public function new(x:Int, y:Int, playerNumber:Int)
 	{
 		super(x, y);
@@ -108,13 +106,14 @@ class Player extends ActiveEntity
     sprite.add("skid", [6]);
     sprite.play("idle");
     type = "player";
+    flashColor = 0xFFFFFF;
     setHitbox(12, 24, -2, 0);
     isSkidding = false;
     isRunning = false;
     isHangingOnOption = false;
     this.playerNumber = playerNumber;
     isUsingJoystick = false;
-    invincible = new Timer(INVINCIBILITY_DURATION);
+    damageFlash = new Timer(INVINCIBILITY_DURATION);
     joystick = Input.joystick(playerNumber - 1);
     if(playerNumber == 1) {
       controls = P1_CONTROLS;
@@ -237,7 +236,7 @@ class Player extends ActiveEntity
 
   public override function update()
   {
-    if(isFlashing && !invincible.isActive()) {
+    if(isFlashing && !damageFlash.isActive()) {
       stopFlashing();
     }
     if(hopTimer > 0) {
@@ -269,8 +268,8 @@ class Player extends ActiveEntity
 
     var damager = collideTypes(["enemy", "missile"], x, y);
     if(damager != null) {
-      if(!invincible.isActive()) {
-        takeDamage(damager);
+      if(!damageFlash.isActive()) {
+        takeDamageFromEntity(damager);
       }
       if(damager.type == "missile") {
         scene.remove(damager);
@@ -499,8 +498,8 @@ class Player extends ActiveEntity
     moveBy(0, velocity.y + Math.sin(option.bobTimer * 2) * Option.BOB_HEIGHT/1.5, "walls");
   }
 
-  public function takeDamage(damager:Entity) {
-    invincible.restart();
+  public function takeDamageFromEntity(damager:Entity) {
+    damageFlash.restart();
     startFlashing();
     if(x < damager.x)
     {

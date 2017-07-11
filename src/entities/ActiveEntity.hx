@@ -10,6 +10,7 @@ class ActiveEntity extends Entity
 
     public static inline var DEFAULT_FLASH_COLOR = 0xFF0000;
     public static inline var DEFAULT_FLASH_SPEED = 0.2;
+    public static inline var DAMAGE_FLASH_DURATION = 10;
 
     private var sprite:Spritemap;
     private var velocity:Point;
@@ -17,6 +18,7 @@ class ActiveEntity extends Entity
     private var flashTimer:Float;
     private var isFlashing:Bool;
     private var health:Int;
+    private var damageFlash:Timer;
 
     public function new(x:Int, y:Int, health:Int=100)
     {
@@ -25,6 +27,7 @@ class ActiveEntity extends Entity
         flashColor = 0xFF0000;
         isFlashing = false;
         flashTimer = 0;
+        damageFlash = new Timer(DAMAGE_FLASH_DURATION);
         velocity = new Point(0, 0);
     }
 
@@ -55,6 +58,9 @@ class ActiveEntity extends Entity
     public override function update()
     {
         super.update();
+        if(!damageFlash.isActive() && isFlashing) {
+          stopFlashing();
+        }
         if(isFlashing) {
           if(flashTimer%Math.PI < 1) {
             visible = false;
@@ -84,6 +90,12 @@ class ActiveEntity extends Entity
 
     public function die() {
       scene.remove(this);
+    }
+
+    public function takeDamage(damage:Int) {
+      health -= damage;
+      startFlashing();
+      damageFlash.restart();
     }
 
     public function getPositionOnScreen()

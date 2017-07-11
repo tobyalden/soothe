@@ -26,6 +26,7 @@ class Luster extends ActiveEntity
         cooldownTimer = 0;
         bobTimer = 0;
         destination = new Point(0, 0);
+        flashColor = 0xFFFFFF;
         setHitbox(24, 24);
         sprite.add("idle", [0]);
         sprite.add("shoot", [1]);
@@ -57,7 +58,7 @@ class Luster extends ActiveEntity
       }
       var bullet = collide("bullet", x, y);
       if(bullet != null) {
-        health -= 10;
+        takeDamage(10);
         scene.remove(bullet);
       }
       super.update();
@@ -66,6 +67,12 @@ class Luster extends ActiveEntity
     override public function die() {
       scene.add(new Explosion(this));
       scene.remove(this);
+    }
+
+    override public function takeDamage(damage:Int) {
+      health -= damage;
+      startFlashing();
+      damageFlash.restart();
     }
 
     private function shoot()
