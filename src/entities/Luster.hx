@@ -15,13 +15,14 @@ class Luster extends ActiveEntity
     public static inline var SHOT_COOLDOWN = 20;
 
     public static inline var GROUP_SPACING = 40;
+    public static inline var ACTIVATE_RADIUS = 200;
 
     private static var groupLogicApplied:Bool = false;
 
     public var bobTimer:Float;
     public var destination:Point;
     private var cooldownTimer:Int;
-
+    private var isActive:Bool;
 
     public function new(x:Int, y:Int)
     {
@@ -32,6 +33,7 @@ class Luster extends ActiveEntity
         bobTimer = 0;
         destination = new Point(0, 0);
         flashColor = 0xFFFFFF;
+        isActive = false;
         setHitbox(24, 24);
         sprite.add("idle", [0]);
         sprite.add("shoot", [1]);
@@ -47,6 +49,9 @@ class Luster extends ActiveEntity
       scene.getClass(Luster, allLusters);
       var count = 0;
       for(luster in allLusters) {
+        if(isActive) {
+          continue;
+        }
         if(count == 0) {
           // do nothing
         }
@@ -67,8 +72,13 @@ class Luster extends ActiveEntity
       var player = HXP.scene.getInstance("player1");
       destination.x = player.centerX - halfWidth;
       destination.y = player.centerY - halfHeight - HOVER_HEIGHT;
+      if(distanceFrom(player, true) <= ACTIVATE_RADIUS) {
+        isActive = true;
+      }
       offsetDestinationForGroup();
-      moveTowards(destination.x, destination.y, CHASE_SPEED);
+      if(isActive) {
+        moveTowards(destination.x, destination.y, CHASE_SPEED);
+      }
       if(distanceToPoint(destination.x, destination.y, true) < 50) {
         sprite.play("shoot");
         shoot();
