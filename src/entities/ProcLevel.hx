@@ -80,9 +80,10 @@ class ProcLevel extends Entity
       TILE_SIZE,
       TILE_SIZE
     );
-    /*placeWater();*/
+    placeWater();
     /*if(hasSubLevel) {*/
       placePlayers();
+      placeEnemies();
     /*}*/
     prettifyMap();
   }
@@ -241,6 +242,17 @@ class ProcLevel extends Entity
       entities.push(player);
       entities.push(new Option(player));
       entities.push(new Sword(player));
+  }
+
+  public function placeEnemies() {
+      for(i in 0...25) {
+        var point = pickRandomOpenPoint();
+        var luster = new Luster(
+          Math.round(point.x) * TILE_SIZE * levelScale,
+          Math.round(point.y) * TILE_SIZE * levelScale
+          );
+          entities.push(luster);
+      }
   }
 
   public function prettifyMap() {
