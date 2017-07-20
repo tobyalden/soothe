@@ -20,10 +20,4 @@ class Transition extends Entity
         layer = -9999;
     }
 
-    /*override public function update()
-    {
-      var player = HXP.scene.getInstance("player1");
-      x = player.centerX - HXP.halfWidth;
-      y = player.centerY - HXP.halfHeight;
-    }*/
 }

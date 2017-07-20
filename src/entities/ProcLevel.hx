@@ -84,6 +84,7 @@ class ProcLevel extends Entity
     /*if(hasSubLevel) {*/
       placePlayers();
       placeEnemies();
+      placeDoors();
     /*}*/
     prettifyMap();
   }
@@ -253,6 +254,17 @@ class ProcLevel extends Entity
           );
           entities.push(luster);
       }
+  }
+
+  public function placeDoors() {
+    for(i in 0...25) {
+        var point = pickRandomPointOnGround();
+        var door = new Door(
+          Math.round(point.x) * TILE_SIZE * levelScale,
+          Math.round(point.y) * TILE_SIZE * levelScale
+        );
+        entities.push(door);
+    }
   }
 
   public function prettifyMap() {
@@ -530,6 +542,23 @@ class ProcLevel extends Entity
       randomOpenPoint = pickRandomPoint();
     }
     return randomOpenPoint;
+  }
+
+  public function pickRandomPointOnGround()
+  {
+    var randomPoint:Point = pickRandomPoint();
+    while(
+      map[Math.round(randomPoint.y)][Math.round(randomPoint.x)] != 0 ||
+      map[Math.round(randomPoint.y) + 1][Math.round(randomPoint.x)] != 1 ||
+      map[Math.round(randomPoint.y) + 1][Math.round(randomPoint.x) + 1] != 1 ||
+      map[Math.round(randomPoint.y) + 1][Math.round(randomPoint.x) - 1] != 1 ||
+      map[Math.round(randomPoint.y)][Math.round(randomPoint.x) + 1] != 0 ||
+      map[Math.round(randomPoint.y)][Math.round(randomPoint.x) - 1] != 0
+    ) {
+      randomPoint = pickRandomOpenPoint();
+    }
+    randomPoint.y += 1;
+    return randomPoint;
   }
 
   public function pickRandomOpenPointWithRoom(roomNeeded:Int)
