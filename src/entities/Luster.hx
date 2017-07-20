@@ -109,6 +109,7 @@ class Luster extends ActiveEntity
 
     override public function takeDamage(damage:Int) {
       health -= damage;
+      isActive = true;
       startFlashing();
       damageFlash.restart();
     }
