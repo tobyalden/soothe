@@ -12,7 +12,7 @@ class ActiveEntity extends Entity
     public static inline var DEFAULT_FLASH_SPEED = 0.2;
     public static inline var DAMAGE_FLASH_DURATION = 10;
 
-    private var sprite:Spritemap;
+    public var sprite:Spritemap;
     private var velocity:Point;
     private var flashColor:Int;
     private var flashTimer:Float;

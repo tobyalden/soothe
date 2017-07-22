@@ -1,6 +1,5 @@
 package entities;
 
-import flash.system.System;
 import com.haxepunk.utils.*;
 import com.haxepunk.*;
 import com.haxepunk.graphics.*;
@@ -51,7 +50,6 @@ class Player extends ActiveEntity
     "down"=>Key.DOWN,
     "jump"=>Key.Z,
     "action"=>Key.X,
-    "quit"=>Key.ESCAPE
   ];
 
   public var P2_CONTROLS = [
@@ -252,10 +250,6 @@ class Player extends ActiveEntity
     }
     else {
       movement();
-    }
-
-    if(checkControl("quit")) {
-      System.exit(0);
     }
 
     if(checkControl("reset")) {

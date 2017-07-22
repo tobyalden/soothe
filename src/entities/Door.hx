@@ -2,6 +2,7 @@ package entities;
 
 import com.haxepunk.*;
 import com.haxepunk.graphics.*;
+import scenes.*;
 
 class Door extends Entity
 {
@@ -24,6 +25,7 @@ class Door extends Entity
       var player = cast(scene.getInstance("player1"), Player);
       if(player.isInteracting && collideWith(player, x, y) != null) {
         sprite.play("open");
+        cast(scene, GameScene).transitionToNewScene();
       }
     }
 

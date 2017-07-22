@@ -1,5 +1,6 @@
 package scenes;
 
+import flash.system.System;
 import com.haxepunk.*;
 import com.haxepunk.utils.*;
 import com.haxepunk.graphics.*;
@@ -32,13 +33,17 @@ class GameScene extends Scene
 		transition = new Transition();
 		add(level);
 		add(transition);
+		paused = false;
 	}
 
   public override function update() {
 		Timer.updateAll();
+		if(Input.pressed(Key.ESCAPE)) {
+			System.exit(0);
+		}
 		if(Input.pressed(Key.L)) {
 			/*add(new Luster(Math.round(level.player.x - 500), Math.round(level.player.y)));*/
-			paused = !paused;
+			pause();
 		}
     if(Input.pressed(Key.P)) {
       HXP.scene = new GameScene();
@@ -49,10 +54,25 @@ class GameScene extends Scene
 		else {
 			HXP.screen.scale = 4;
 		}
-		if(!paused) {
-			super.update();
-		}
+		super.update();
   }
+
+	public function pause()
+	{
+		trace("pause");
+		paused = !paused;
+		for(e in level.entities) {
+			e.active = !paused;
+		}
+	}
+
+	public function transitionToNewScene()
+	{
+		trace("transitionToNewScene");
+		level.player.sprite.stop();
+		pause();
+		transition.fadeOut();
+	}
 
 
 }
