@@ -11,6 +11,7 @@ class GameScene extends Scene
 
 	private var level:ProcLevel;
 	private var transition:Transition;
+	public var paused:Bool;
 
 	public function new()
 	{
@@ -37,6 +38,7 @@ class GameScene extends Scene
 		Timer.updateAll();
 		if(Input.pressed(Key.L)) {
 			/*add(new Luster(Math.round(level.player.x - 500), Math.round(level.player.y)));*/
+			paused = !paused;
 		}
     if(Input.pressed(Key.P)) {
       HXP.scene = new GameScene();
@@ -47,7 +49,9 @@ class GameScene extends Scene
 		else {
 			HXP.screen.scale = 4;
 		}
-    super.update();
+		if(!paused) {
+			super.update();
+		}
   }
 
 

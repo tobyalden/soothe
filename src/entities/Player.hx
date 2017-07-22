@@ -75,6 +75,7 @@ class Player extends ActiveEntity
   public var option:Option;
   public var sword:Sword;
   public var isHangingOnOption:Bool;
+  public var isInteracting:Bool;
 
   private var isRunning:Bool;
   private var isSkidding:Bool;
@@ -110,6 +111,7 @@ class Player extends ActiveEntity
     setHitbox(12, 24, -2, 0);
     isSkidding = false;
     isRunning = false;
+    isInteracting = false;
     isHangingOnOption = false;
     this.playerNumber = playerNumber;
     isUsingJoystick = false;
@@ -236,6 +238,7 @@ class Player extends ActiveEntity
 
   public override function update()
   {
+    isInteracting = pressedControl("down");
     if(isFlashing && !damageFlash.isActive()) {
       stopFlashing();
     }
