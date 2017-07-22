@@ -233,10 +233,10 @@ class ProcLevel extends Entity
   }
 
   public function placePlayers() {
-      var point = pickRandomOpenPoint();
+      var point = pickRandomPointOnGround();
       var player = new Player(
         Math.round(point.x) * TILE_SIZE * levelScale,
-        Math.round(point.y) * TILE_SIZE * levelScale,
+        Math.round(point.y) * TILE_SIZE * levelScale - 24,
         1
       );
       this.player = player;

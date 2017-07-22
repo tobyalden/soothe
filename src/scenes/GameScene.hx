@@ -13,6 +13,7 @@ class GameScene extends Scene
 	private var level:ProcLevel;
 	private var transition:Transition;
 	public var paused:Bool;
+	public var isTransitioning:Bool;
 
 	public function new()
 	{
@@ -34,6 +35,8 @@ class GameScene extends Scene
 		add(level);
 		add(transition);
 		paused = false;
+		isTransitioning = false;
+		transition.fadeIn();
 	}
 
   public override function update() {
@@ -54,6 +57,9 @@ class GameScene extends Scene
 		else {
 			HXP.screen.scale = 4;
 		}
+		if(isTransitioning && transition.sprite.complete) {
+			HXP.scene = new GameScene();
+		}
 		super.update();
   }
 
@@ -67,6 +73,7 @@ class GameScene extends Scene
 
 	public function transitionToNewScene()
 	{
+		isTransitioning = true;
 		level.player.sprite.stop();
 		pause();
 		transition.fadeOut();
