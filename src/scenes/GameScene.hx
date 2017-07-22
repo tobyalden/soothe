@@ -59,7 +59,6 @@ class GameScene extends Scene
 
 	public function pause()
 	{
-		trace("pause");
 		paused = !paused;
 		for(e in level.entities) {
 			e.active = !paused;
@@ -68,7 +67,6 @@ class GameScene extends Scene
 
 	public function transitionToNewScene()
 	{
-		trace("transitionToNewScene");
 		level.player.sprite.stop();
 		pause();
 		transition.fadeOut();
