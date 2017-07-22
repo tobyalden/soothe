@@ -42,14 +42,14 @@ class Luster extends ActiveEntity
         finishInitializing();
     }
 
-    public function offsetDestinationForGroup()
+    static public function offsetDestinationForGroup()
     {
       // later factor in distance & make it only run once per frame
       var allLusters = new Array<Luster>();
-      scene.getClass(Luster, allLusters);
+      HXP.scene.getClass(Luster, allLusters);
       var count = 0;
       for(luster in allLusters) {
-        if(isActive) {
+        if(!luster.isActive) {
           continue;
         }
         if(count == 0) {
@@ -70,12 +70,9 @@ class Luster extends ActiveEntity
     public override function update()
     {
       var player = HXP.scene.getInstance("player1");
-      destination.x = player.centerX - halfWidth;
-      destination.y = player.centerY - halfHeight - HOVER_HEIGHT;
       if(distanceFrom(player, true) <= ACTIVATE_RADIUS) {
         isActive = true;
       }
-      offsetDestinationForGroup();
       if(isActive) {
         moveTowards(destination.x, destination.y, CHASE_SPEED);
       }
@@ -99,6 +96,8 @@ class Luster extends ActiveEntity
         takeDamage(50);
         scene.remove(bullet);
       }
+      destination.x = player.centerX - halfWidth;
+      destination.y = player.centerY - halfHeight - HOVER_HEIGHT;
       super.update();
     }
 

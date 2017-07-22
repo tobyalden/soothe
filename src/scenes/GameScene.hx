@@ -60,6 +60,7 @@ class GameScene extends Scene
 		if(isTransitioning && transition.sprite.complete) {
 			HXP.scene = new GameScene();
 		}
+		Luster.offsetDestinationForGroup();
 		super.update();
   }
 
