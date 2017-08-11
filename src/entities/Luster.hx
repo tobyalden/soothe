@@ -11,40 +11,37 @@ class Luster extends ActiveEntity
     public static inline var HOVER_HEIGHT = 100;
     public static inline var BOB_SPEED = 0.3;
     public static inline var BOB_HEIGHT = 1;
+
     public static inline var MISSILE_SPEED = 6;
     public static inline var SHOT_COOLDOWN = 20;
 
-    public static inline var GROUP_SPACING = 40;
     public static inline var ACTIVATE_RADIUS = 200;
+    public static inline var GROUP_SPACING = 40;
 
-    private static var groupLogicApplied:Bool = false;
-
-    public var bobTimer:Float;
-    public var destination:Point;
-    private var cooldownTimer:Int;
     private var isActive:Bool;
+    public var destination:Point;
+    public var bobTimer:Float;
+    private var cooldownTimer:Int;
 
     public function new(x:Int, y:Int)
     {
         super(x, y);
-        sprite = new Spritemap("graphics/luster.png", 16, 16);
+        this.sprite = new Spritemap("graphics/luster.png", 16, 16);
+        this.isActive = false;
+        this.destination = new Point(0, 0);
+        this.bobTimer = 0;
+        this.cooldownTimer = 0;
+        type = "enemy";
         sprite.scale = 1.5;
-        cooldownTimer = 0;
-        bobTimer = 0;
-        destination = new Point(0, 0);
-        flashColor = 0xFFFFFF;
-        isActive = false;
-        setHitbox(24, 24);
         sprite.add("idle", [0]);
         sprite.add("shoot", [1]);
         sprite.play("idle");
-        type = "enemy";
+        setHitbox(24, 24);
         finishInitializing();
     }
 
     static public function offsetDestinationForGroup()
     {
-      // later factor in distance & make it only run once per frame
       var allLusters = new Array<Luster>();
       HXP.scene.getClass(Luster, allLusters);
       var count = 0;
@@ -83,11 +80,13 @@ class Luster extends ActiveEntity
       else {
         sprite.play("idle");
       }
+
       y += Math.sin(bobTimer) * BOB_HEIGHT;
       bobTimer += BOB_SPEED;
       if(bobTimer > Math.PI*4) {
         bobTimer -= Math.PI*4;
       }
+
       if(collide("sword", x, y) != null) {
         die();
       }
@@ -96,8 +95,10 @@ class Luster extends ActiveEntity
         takeDamage(50);
         scene.remove(bullet);
       }
+
       destination.x = player.centerX - halfWidth;
       destination.y = player.centerY - halfHeight - HOVER_HEIGHT;
+
       super.update();
     }
 
@@ -107,8 +108,8 @@ class Luster extends ActiveEntity
     }
 
     override public function takeDamage(damage:Int) {
-      health -= damage;
       isActive = true;
+      health -= damage;
       startFlashing();
       damageFlash.restart();
     }

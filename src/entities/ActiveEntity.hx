@@ -8,7 +8,7 @@ import com.haxepunk.graphics.Spritemap;
 class ActiveEntity extends Entity
 {
 
-    public static inline var DEFAULT_FLASH_COLOR = 0xFF0000;
+    public static inline var DEFAULT_FLASH_COLOR = 0xFFFFFF;
     public static inline var DEFAULT_FLASH_SPEED = 0.2;
     public static inline var DAMAGE_FLASH_DURATION = 10;
 
