@@ -22,7 +22,7 @@ class GameScene extends Scene
 
 	public override function begin()
 	{
-    this.level = new ProcLevel(0, 0, 25, 25, 3);
+        this.level = new ProcLevel(0, 0, 25, 25, 3);
 		this.transition = new Transition();
 		this.paused = false;
 		this.isTransitioning = false;
@@ -32,18 +32,18 @@ class GameScene extends Scene
 	}
 
   public override function update() {
-		debugTools();
-		Timer.updateAll();
-		if(isTransitioning && transition.sprite.complete) {
-			HXP.scene = new GameScene();
-		}
-		Luster.offsetDestinationForGroup();
-		super.update();
+	debugTools();
+	Timer.updateAll();
+	if(isTransitioning && transition.sprite.complete) {
+		HXP.scene = new GameScene();
+	}
+	Luster.offsetDestinationForGroup();
+	super.update();
   }
 
 	public function debugTools()
 	{
-		if(Input.pressed(Key.L)) {
+	    if(Input.pressed(Key.L)) {
 			pause();
 		}
 		if(Input.pressed(Key.P)) {

@@ -559,7 +559,10 @@ class ProcLevel extends Entity
   {
     var randomOpenPoint:Point = pickRandomPoint();
     while(
-      !isInMap(Math.round(randomOpenPoint.x) + roomNeeded, Math.round(randomOpenPoint.y) + roomNeeded) ||
+      !isInMap(
+        Math.round(randomOpenPoint.x) + roomNeeded,
+        Math.round(randomOpenPoint.y) + roomNeeded
+      ) ||
       map[Math.round(randomOpenPoint.y)][Math.round(randomOpenPoint.x)] != 0
     ) {
       randomOpenPoint = pickRandomPoint();
@@ -568,7 +571,11 @@ class ProcLevel extends Entity
   }
 
   public function isInMap(checkX:Int, checkY:Int) {
-      return checkX >= 0 && checkX < levelWidth && checkY >= 0 && checkY < levelHeight;
+      return (
+        checkX >= 0
+        && checkX < levelWidth
+        && checkY >= 0 && checkY < levelHeight
+      );
     }
 
 }

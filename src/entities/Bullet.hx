@@ -27,7 +27,7 @@ class Bullet extends Entity
       if(e.type == "walls") {
         scene.remove(this);
       }
-        return true;
+      return true;
     }
 
     public override function moveCollideY(e:Entity)
