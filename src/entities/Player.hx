@@ -99,15 +99,10 @@ class Player extends ActiveEntity
 
   public override function update()
   {
-    isInteracting = pressedControl("down");
+    isUsingJoystick = Input.joysticks > 0;
     if(isFlashing && !damageFlash.isActive()) {
       stopFlashing();
     }
-    if(hopTimer > 0) {
-      hopTimer -= 1;
-    }
-    isUsingJoystick = Input.joysticks > 0;
-
     if(isHangingOnOption) {
       hangMovement();
     }
@@ -139,8 +134,11 @@ class Player extends ActiveEntity
   }
 
   public function movement() {
+    isInteracting = pressedControl("down");
     isRunning = (
-      !isUsingJoystick || Math.abs(joystick.getAxis(0)) > JOYSTICK_RUN_THRESHOLD || Input.joystick(0).hat.x != 0 || Input.joystick(0).hat.y != 0
+      !isUsingJoystick
+      || Math.abs(joystick.getAxis(0)) > JOYSTICK_RUN_THRESHOLD
+      || Input.joystick(0).hat.x != 0 || Input.joystick(0).hat.y != 0
     );
     if(isStartingSkid()) {
       isSkidding = true;
@@ -148,6 +146,10 @@ class Player extends ActiveEntity
     if(isStoppingSkid()) {
       isSkidding = false;
     }
+    if(hopTimer > 0) {
+      hopTimer -= 1;
+    }
+
     if(checkControl("left")) {
       if(!isOnGround()) {
         if(isOnRightWall()) {
@@ -200,11 +202,7 @@ class Player extends ActiveEntity
         }
       }
       else {
-        var turnMultiplier = 1.0;
-        if(isChangingDirection()) {
-          turnMultiplier = WALK_TURN_MULTIPLIER;
-        }
-        velocity.x = velocity.x + WALK_ACCEL * turnMultiplier;
+        velocity.x = velocity.x + WALK_ACCEL;
       }
       if(isOnRightWall()) {
         velocity.x = 0;
@@ -324,6 +322,7 @@ class Player extends ActiveEntity
   }
 
   public function hangMovement() {
+    isInteracting = false;
     if(releasedControl("jump")) {
       isHangingOnOption = false;
     }
@@ -345,7 +344,10 @@ class Player extends ActiveEntity
     velocity.x = Math.max(velocity.x, -RUN_SPEED);
     velocity.y = Math.max(velocity.y - GRAVITY * 1.03, -RUN_SPEED/2);
     moveBy(velocity.x, 0, "walls");
-    moveBy(0, velocity.y + Math.sin(option.bobTimer * 2) * Option.BOB_HEIGHT/1.5, "walls");
+    moveBy(
+      0, velocity.y + Math.sin(option.bobTimer * 2) * Option.BOB_HEIGHT/1.5,
+      "walls"
+    );
   }
 
   private function isChangingDirection() {
