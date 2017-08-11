@@ -236,8 +236,7 @@ class ProcLevel extends Entity
       var point = pickRandomPointOnGround();
       var player = new Player(
         Math.round(point.x) * TILE_SIZE * levelScale,
-        Math.round(point.y) * TILE_SIZE * levelScale - 24,
-        1
+        Math.round(point.y) * TILE_SIZE * levelScale - 24
       );
       this.player = player;
       entities.push(player);

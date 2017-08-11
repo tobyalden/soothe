@@ -18,19 +18,18 @@ class Player extends ActiveEntity
   public static inline var AIR_ACCEL = 0.18;
   public static inline var AIR_DECCEL = 0.1;
   public static inline var STOP_DECCEL = 0.3;
+
   public static inline var JUMP_POWER = 6;
-  public static inline var SKID_JUMP_POWER = 7;
+  public static inline var JUMP_CANCEL_POWER = 2;
   public static inline var WALL_JUMP_POWER = 4.65;
   public static inline var LEDGE_HOP_POWER = 4.10;
   public static inline var HOP_TIMER = 60;
+
   public static inline var WALL_STICK_TIME = 10;
-  public static inline var JUMP_CANCEL_POWER = 2;
   public static inline var GRAVITY = 0.25;
   public static inline var WALL_GRAVITY = 0.1;
-  /*public static inline var WALL_GRAVITY = 0.15;*/
   public static inline var MAX_FALL_SPEED = 10;
   public static inline var MAX_WALL_FALL_SPEED = 5;
-  /*public static inline var MAX_WALL_FALL_SPEED = 6;*/
   public static inline var SKID_THRESHOLD = 2.8;
   public static inline var HEAD_BONK_SPEED = 0.5;
 
@@ -43,31 +42,13 @@ class Player extends ActiveEntity
   public static inline var HIT_VELOCITY_X = 4;
   public static inline var HIT_VELOCITY_Y = 2;
 
-  public var P1_CONTROLS = [
+  public var CONTROLS = [
     "left"=>Key.LEFT,
     "right"=>Key.RIGHT,
     "up"=>Key.UP,
     "down"=>Key.DOWN,
     "jump"=>Key.Z,
     "action"=>Key.X,
-  ];
-
-  public var P2_CONTROLS = [
-    "left"=>Key.J,
-    "right"=>Key.L,
-    "up"=>Key.I,
-    "down"=>Key.K,
-    "jump"=>Key.A,
-    "run"=>Key.S
-  ];
-
-  public var P3_CONTROLS = [
-    "left"=>Key.D,
-    "right"=>Key.G,
-    "up"=>Key.R,
-    "down"=>Key.F,
-    "jump"=>Key.Q,
-    "run"=>Key.W
   ];
 
   public var option:Option;
@@ -77,7 +58,6 @@ class Player extends ActiveEntity
 
   private var isRunning:Bool;
   private var isSkidding:Bool;
-  private var playerNumber:Int;
   private var wallStickTimer:Int;
   private var hopTimer:Int;
   private var controls:Map<String, Int>;
@@ -85,18 +65,22 @@ class Player extends ActiveEntity
   private var isUsingJoystick:Bool;
   private var joystick:Joystick;
 
-	public function new(x:Int, y:Int, playerNumber:Int)
+	public function new(x:Int, y:Int)
 	{
 		super(x, y);
-    if(playerNumber == 1) {
-      sprite = new Spritemap("graphics/player.png", 16, 24);
-    }
-    else if(playerNumber == 2) {
-      sprite = new Spritemap("graphics/player2.png", 16, 24);
-    }
-    else {
-      sprite = new Spritemap("graphics/player3.png", 16, 24);
-    }
+    this.sprite = new Spritemap("graphics/player.png", 16, 24);
+    this.damageFlash = new Timer(INVINCIBILITY_DURATION);
+    this.isHangingOnOption = false;
+    this.isInteracting = false;
+    this.isRunning = false;
+    this.isSkidding = false;
+    this.wallStickTimer = 0;
+    this.hopTimer = 0;
+    this.controls = CONTROLS;
+    this.isUsingJoystick = false;
+    this.joystick = Input.joystick(0);
+    type = "player";
+    name = "player";
     sprite.add("idle", [0]);
     sprite.add("walk", [1, 2, 3, 2], 10);
     sprite.add("run", [1, 2, 3, 2], 13);
@@ -104,134 +88,13 @@ class Player extends ActiveEntity
     sprite.add("wallslide", [5]);
     sprite.add("skid", [6]);
     sprite.play("idle");
-    type = "player";
-    flashColor = 0xFFFFFF;
     setHitbox(12, 24, -2, 0);
-    isSkidding = false;
-    isRunning = false;
-    isInteracting = false;
-    isHangingOnOption = false;
-    this.playerNumber = playerNumber;
-    isUsingJoystick = false;
-    damageFlash = new Timer(INVINCIBILITY_DURATION);
-    joystick = Input.joystick(playerNumber - 1);
-    if(playerNumber == 1) {
-      controls = P1_CONTROLS;
-      name = "player1";
-    }
-    else if(playerNumber == 2) {
-      controls = P2_CONTROLS;
-      name = "player2";
-    }
-    else {
-      controls = P3_CONTROLS;
-      name = "player3";
-    }
-    wallStickTimer = 0;
-    hopTimer = 0;
 		finishInitializing();
 	}
 
-  public function checkControl(control:String) {
-    if(isUsingJoystick) {
-      if(control == "left") {
-        return joystick.getAxis(0) < 0 || Input.joystick(0).hat.x == -1;
-      }
-      if(control == "right") {
-        return joystick.getAxis(0) >  0 || Input.joystick(0).hat.x == 1;
-      }
-      if(control == "up") {
-        return joystick.getAxis(1) < 0 || Input.joystick(0).hat.y == -1;
-      }
-      if(control == "down") {
-        return joystick.getAxis(1) > 0 || Input.joystick(0).hat.y == 1;
-      }
-      if(control == "jump") {
-        return joystick.check(1);
-      }
-      if(control == "action") {
-        return joystick.check(0);
-      }
-    }
-    if(Input.check(controls[control])) {
-      return true;
-    }
-    return false;
-  }
-
-  public function pressedControl(control:String) {
-    /*for (i in 0...100) {
-      if(joystick.pressed(i)) {
-        trace(i + "pressed!");
-      }
-    }*/
-    if(isUsingJoystick) {
-      if(control == "jump") {
-        return joystick.pressed(4) ||  joystick.pressed(1);
-      }
-      if(control == "action") {
-        return joystick.pressed(0);
-      }
-
-    }
-    else {
-      if(Input.pressed(controls[control])) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  public function releasedControl(control:String) {
-    if(isUsingJoystick) {
-      if(control == "jump") {
-        return joystick.released(4) || joystick.released(1);
-      }
-      if(control == "action") {
-        return joystick.released(0);
-      }
-    }
-    else {
-      if(Input.released(controls[control])) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  private function getPlayer(playerId:Int) {
-    if(playerId == 1) {
-      return HXP.scene.getInstance("player1");
-    }
-    else if(playerId == 2) {
-      return HXP.scene.getInstance("player2");
-    }
-    else {
-      return HXP.scene.getInstance("player3");
-    }
-  }
-
-  private function otherPlayerDistance(playerId:Int) {
-    return distanceFrom(getPlayer(playerId), true);
-  }
-
-  private function isChangingDirection() {
-    return (
-      checkControl("left") && velocity.x > 0 ||
-      checkControl("right") && velocity.x < 0
-    );
-  }
-
-  private function isStartingSkid() {
-    return (
-      isOnGround() &&
-      isChangingDirection() &&
-      Math.abs(velocity.x) > SKID_THRESHOLD
-    );
-  }
-
-  private function isStoppingSkid() {
-    return velocity.x == 0 || !isChangingDirection();
+  public override function moveCollideX(e:Entity) {
+    velocity.x /= 2;
+    return true;
   }
 
   public override function update()
@@ -243,7 +106,7 @@ class Player extends ActiveEntity
     if(hopTimer > 0) {
       hopTimer -= 1;
     }
-    isUsingJoystick = Input.joysticks >= playerNumber;
+    isUsingJoystick = Input.joysticks > 0;
 
     if(isHangingOnOption) {
       hangMovement();
@@ -254,12 +117,12 @@ class Player extends ActiveEntity
 
     if(checkControl("reset")) {
       y = 300;
-      getPlayer(1).x = 10;
+      x = 10;
     }
 
     animate();
 
-    if(name == "player1") {
+    if(name == "player") {
       setCamera();
     }
 
@@ -272,15 +135,7 @@ class Player extends ActiveEntity
         scene.remove(damager);
       }
     }
-
-    debug();
     super.update();
-  }
-
-  public function debug() {
-    if(Input.check(Key.U)) {
-      y -= 100;
-    }
   }
 
   public function movement() {
@@ -469,8 +324,6 @@ class Player extends ActiveEntity
   }
 
   public function hangMovement() {
-    // maybe the moment you grab on it yanks you upward and if you time your jump along with it you can do an infinitely repeatable super jump
-    // but if you keep hanging onto it it'll just glide you downwards
     if(releasedControl("jump")) {
       isHangingOnOption = false;
     }
@@ -495,6 +348,25 @@ class Player extends ActiveEntity
     moveBy(0, velocity.y + Math.sin(option.bobTimer * 2) * Option.BOB_HEIGHT/1.5, "walls");
   }
 
+  private function isChangingDirection() {
+    return (
+      checkControl("left") && velocity.x > 0 ||
+      checkControl("right") && velocity.x < 0
+    );
+  }
+
+  private function isStartingSkid() {
+    return (
+      isOnGround() &&
+      isChangingDirection() &&
+      Math.abs(velocity.x) > SKID_THRESHOLD
+    );
+  }
+
+  private function isStoppingSkid() {
+    return velocity.x == 0 || !isChangingDirection();
+  }
+
   public function takeDamageFromEntity(damager:Entity) {
     damageFlash.restart();
     startFlashing();
@@ -509,16 +381,6 @@ class Player extends ActiveEntity
     if(isOnGround()) {
       velocity.y = -HIT_VELOCITY_Y;
     }
-  }
-
-  public override function moveCollideX(e:Entity) {
-    velocity.x /= 2;
-    return true;
-  }
-
-  private function setCamera() {
-    HXP.camera.x = x - HXP.halfWidth;
-    HXP.camera.y = y - HXP.halfHeight;
   }
 
   private function animate()
@@ -553,5 +415,78 @@ class Player extends ActiveEntity
     else if(velocity.x > 0) {
       sprite.flipped = false;
     }
+  }
+
+  private function setCamera() {
+    HXP.camera.x = x - HXP.halfWidth;
+    HXP.camera.y = y - HXP.halfHeight;
+  }
+
+
+  public function checkControl(control:String) {
+    if(isUsingJoystick) {
+      if(control == "left") {
+        return joystick.getAxis(0) < 0 || Input.joystick(0).hat.x == -1;
+      }
+      if(control == "right") {
+        return joystick.getAxis(0) >  0 || Input.joystick(0).hat.x == 1;
+      }
+      if(control == "up") {
+        return joystick.getAxis(1) < 0 || Input.joystick(0).hat.y == -1;
+      }
+      if(control == "down") {
+        return joystick.getAxis(1) > 0 || Input.joystick(0).hat.y == 1;
+      }
+      if(control == "jump") {
+        return joystick.check(1);
+      }
+      if(control == "action") {
+        return joystick.check(0);
+      }
+    }
+    if(Input.check(controls[control])) {
+      return true;
+    }
+    return false;
+  }
+
+  public function pressedControl(control:String) {
+    /*for (i in 0...100) {
+      if(joystick.pressed(i)) {
+        trace(i + "pressed!");
+      }
+    }*/
+    if(isUsingJoystick) {
+      if(control == "jump") {
+        return joystick.pressed(4) ||  joystick.pressed(1);
+      }
+      if(control == "action") {
+        return joystick.pressed(0);
+      }
+
+    }
+    else {
+      if(Input.pressed(controls[control])) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public function releasedControl(control:String) {
+    if(isUsingJoystick) {
+      if(control == "jump") {
+        return joystick.released(4) || joystick.released(1);
+      }
+      if(control == "action") {
+        return joystick.released(0);
+      }
+    }
+    else {
+      if(Input.released(controls[control])) {
+        return true;
+      }
+    }
+    return false;
   }
 }

@@ -66,7 +66,7 @@ class Luster extends ActiveEntity
 
     public override function update()
     {
-      var player = HXP.scene.getInstance("player1");
+      var player = HXP.scene.getInstance("player");
       if(distanceFrom(player, true) <= ACTIVATE_RADIUS) {
         isActive = true;
       }

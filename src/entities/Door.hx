@@ -22,7 +22,7 @@ class Door extends Entity
     }
 
     override public function update() {
-      var player = cast(scene.getInstance("player1"), Player);
+      var player = cast(scene.getInstance("player"), Player);
       if(player.isInteracting && collideWith(player, x, y) != null) {
         sprite.play("open");
         cast(scene, GameScene).transitionToNewScene();
