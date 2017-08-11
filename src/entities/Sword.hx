@@ -28,8 +28,8 @@ class Sword extends ActiveEntity
         sprite = new Spritemap("graphics/slash.png", 144, 72);
         setHitbox(73, 65, -33, -6);
         sprite.add("idle", [0]);
-        sprite.add("slash", [1, 2, 3, 4, 0], 8, false);
-        sprite.add("slash2", [6, 7, 8, 9, 0], 8, false);
+        sprite.add("slash", [1, 2, 3, 4, 0], 12, false);
+        sprite.add("slash2", [6, 7, 8, 9, 0], 12, false);
         sprite.play("idle");
         finishInitializing();
     }
