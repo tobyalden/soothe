@@ -14,9 +14,10 @@ class Water extends Entity
     }
 
     override public function update() {
-      super.update();
-      if(collide("hovertube", x, y) != null) {
-        HXP.scene.remove(this);
-      }
+        super.update();
+        if(collide("hovertube", x, y) != null) {
+            HXP.scene.remove(this);
+        }
     }
+
 }

@@ -44,103 +44,95 @@ class Option extends ActiveEntity
 
     public override function update()
     {
-      super.update();
-      bobTimer += BOB_SPEED;
-      if(bobTimer > Math.PI*4) {
-        bobTimer -= Math.PI*4;
-      }
-      if(player.isHangingOnOption) {
-        destination.y = player.y - HOVER_HEIGHT + 5;
-        sprite.play("carrying");
-      }
-      else {
-        destination.y = player.y - HOVER_HEIGHT;
-        sprite.play("idle");
-      }
-      if(player.isHangingOnOption && player.sprite.flipped) {
-        destination.x = player.centerX;
-      }
-      else if(player.isHangingOnOption) {
-        destination.x = player.centerX - width;
-      }
-      else if(player.sprite.flipped) {
-        destination.x = player.centerX - halfWidth + HOVER_HEIGHT;
-      }
-      else {
-        destination.x = player.centerX - halfWidth - HOVER_HEIGHT;
-      }
-      if(Math.abs(x - destination.x) < Math.abs(velocity.x) + ACCEL) {
-        velocity.x /= 2;
-        x = destination.x;
-      }
-      else if(destination.x > x) {
-        velocity.x += ACCEL;
-      }
-      else {
-        velocity.x -= ACCEL;
-      }
-      velocity.x = Math.min(velocity.x, MAX_SPEED);
-      velocity.x = Math.max(velocity.x, -MAX_SPEED);
+        super.update();
+        bobTimer += BOB_SPEED;
+        if(bobTimer > Math.PI*4) {
+            bobTimer -= Math.PI*4;
+        }
+        if(player.isHangingOnOption) {
+            destination.y = player.y - HOVER_HEIGHT + 5;
+            sprite.play("carrying");
+        }
+        else {
+            destination.y = player.y - HOVER_HEIGHT;
+            sprite.play("idle");
+        }
+        if(player.isHangingOnOption && player.sprite.flipped) {
+            destination.x = player.centerX;
+        }
+        else if(player.isHangingOnOption) {
+            destination.x = player.centerX - width;
+        }
+        else if(player.sprite.flipped) {
+            destination.x = player.centerX - halfWidth + HOVER_HEIGHT;
+        }
+        else {
+            destination.x = player.centerX - halfWidth - HOVER_HEIGHT;
+        }
+        if(Math.abs(x - destination.x) < Math.abs(velocity.x) + ACCEL) {
+            velocity.x /= 2;
+            x = destination.x;
+        }
+        else if(destination.x > x) {
+            velocity.x += ACCEL;
+        }
+        else {
+            velocity.x -= ACCEL;
+        }
+        velocity.x = Math.min(velocity.x, MAX_SPEED);
+        velocity.x = Math.max(velocity.x, -MAX_SPEED);
 
-      x += velocity.x;
-      if(Math.abs(x - player.x) > Math.abs(destination.x - player.x) + 0.1) {
-        x = destination.x;
-      }
-      if(player.isHangingOnOption) {
-        y = destination.y + Math.sin(bobTimer * 2) * BOB_HEIGHT*1.2;
-      }
-      else {
-        y = destination.y + Math.sin(bobTimer) * BOB_HEIGHT;
-      }
+        x += velocity.x;
+        if(Math.abs(x - player.x) > Math.abs(destination.x - player.x) + 0.1) {
+            x = destination.x;
+        }
+        if(player.isHangingOnOption) {
+            y = destination.y + Math.sin(bobTimer * 2) * BOB_HEIGHT*1.2;
+        }
+        else {
+            y = destination.y + Math.sin(bobTimer) * BOB_HEIGHT;
+        }
 
-      /*if(player.pressedControl("action") || player.isHangingOnOption) {*/
         if(player.checkControl("left")) {
-          shootingFlipped = true;
+            shootingFlipped = true;
         }
         else if(player.checkControl("right")) {
-          shootingFlipped = false;
+            shootingFlipped = false;
         }
-        /*else {
-          shootingFlipped = player.sprite.flipped;
-        }
-      }*/ // maybe this could be a powerup
 
       if(player.checkControl("action")) {
         if(player.isHangingOnOption) {
-          return;
+            return;
         }
         if(cooldownTimer != 0) {
-          cooldownTimer -= 1;
-          return;
+            cooldownTimer -= 1;
+            return;
         }
         if(shootingFlipped) {
-          scene.add(
+            scene.add(
             new Bullet(
-              centerX,
-              centerY - 1,
-              new Point(
-                Math.min(-BULLET_SPEED + player.velocity.x, -BULLET_SPEED*0.75),
-                player.velocity.y/2
+                centerX,
+                centerY - 1,
+                new Point(
+                    Math.min(-BULLET_SPEED + player.velocity.x, -BULLET_SPEED*0.75),
+                    player.velocity.y/2
               )
             )
           );
-          /*scene.add(new Bullet(centerX, centerY - 1, new Point(Math.min(-BULLET_SPEED + player.velocity.x, -BULLET_SPEED*0.75), player.velocity.y + Math.sin(bobTimer) * BOB_HEIGHT)));*/
-          // cool sine whip pattern! ^
-          // also cool is shooting so many bullets it's like a steady stream
         }
         else {
-          scene.add(
-            new Bullet(
-              centerX,
-              centerY - 1,
-              new Point(
-                Math.max(BULLET_SPEED + player.velocity.x, BULLET_SPEED*0.75),
-                player.velocity.y/2
-              )
-            )
-          );
+            scene.add(
+                new Bullet(
+                    centerX,
+                    centerY - 1,
+                    new Point(
+                        Math.max(BULLET_SPEED + player.velocity.x, BULLET_SPEED*0.75),
+                        player.velocity.y/2
+                    )
+                )
+            );
         }
         cooldownTimer = SHOT_COOLDOWN;
-      }
+        }   
     }
 }

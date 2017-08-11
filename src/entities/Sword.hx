@@ -18,60 +18,60 @@ class Sword extends ActiveEntity
 
     public function new(player:Player)
     {
-        super(Math.round(player.x), Math.round(player.y));
-        this.sprite = new Spritemap("graphics/slash.png", 144, 72);
-        this.cooldownTimer = 0;
-        this.player = player;
-        player.sword = this;
-        this.slashType = "slash";
-        this.inputBuffer = false;
-        type = "sword";
-        sprite.add("idle", [0]);
-        sprite.add("slash", [1, 2, 3, 4, 0], 12, false);
-        sprite.add("slash2", [6, 7, 8, 9, 0], 12, false);
-        sprite.play("idle");
-        setHitbox(73, 65, -33, -6);
-        finishInitializing();
+            super(Math.round(player.x), Math.round(player.y));
+            this.sprite = new Spritemap("graphics/slash.png", 144, 72);
+            this.cooldownTimer = 0;
+            this.player = player;
+            player.sword = this;
+            this.slashType = "slash";
+            this.inputBuffer = false;
+            type = "sword";
+            sprite.add("idle", [0]);
+            sprite.add("slash", [1, 2, 3, 4, 0], 12, false);
+            sprite.add("slash2", [6, 7, 8, 9, 0], 12, false);
+            sprite.play("idle");
+            setHitbox(73, 65, -33, -6);
+            finishInitializing();
     }
 
     public override function update()
     {
-      super.update();
-      
-      if(cooldownTimer != 0) {
-        // TODO: make only one frame the "active" frame
-        cooldownTimer -= 1;
-        collidable = true;
-      }
-      else {
-        collidable = false;
-      }
+        super.update();
 
-      if(player.pressedControl("action") || inputBuffer) {
-        if(cooldownTimer == 0) {
-          sprite.play(slashType, true);
-          sprite.flipped = player.sprite.flipped;
-          if(slashType == "slash") {
-            slashType = "slash2";
-          }
-          else {
-            slashType = "slash";
-          }
-          cooldownTimer = SLASH_COOLDOWN;
-          inputBuffer = false;
+        if(cooldownTimer != 0) {
+            // TODO: make only one frame the "active" frame
+            cooldownTimer -= 1;
+            collidable = true;
         }
         else {
-          inputBuffer = true;
+            collidable = false;
         }
-      }
 
-      if(sprite.flipped) {
-        x = player.centerX - sprite.width/2 - SLASH_EXTRUDE;
-      }
-      else {
-        x = player.centerX - sprite.width/2 + SLASH_EXTRUDE;
-      }
+        if(player.pressedControl("action") || inputBuffer) {
+            if(cooldownTimer == 0) {
+                sprite.play(slashType, true);
+                sprite.flipped = player.sprite.flipped;
+                if(slashType == "slash") {
+                    slashType = "slash2";
+                }
+                else {
+                    slashType = "slash";
+                }
+                cooldownTimer = SLASH_COOLDOWN;
+                inputBuffer = false;
+            }
+            else {
+                inputBuffer = true;
+            }
+        }
 
-      y = player.y - sprite.height/2;
+        if(sprite.flipped) {
+            x = player.centerX - sprite.width/2 - SLASH_EXTRUDE;
+        }
+        else {
+            x = player.centerX - sprite.width/2 + SLASH_EXTRUDE;
+        }
+
+        y = player.y - sprite.height/2;
     }
 }

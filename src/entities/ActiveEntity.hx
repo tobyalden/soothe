@@ -34,58 +34,60 @@ class ActiveEntity extends Entity
 
     public function finishInitializing()
     {
-      sprite.smooth = false;
-      graphic = sprite;
+        sprite.smooth = false;
+        graphic = sprite;
     }
 
     public override function update()
     {
         super.update();
         if(!damageFlash.isActive() && isFlashing) {
-          stopFlashing();
+            stopFlashing();
         }
         if(isFlashing) {
-          if(flashTimer%Math.PI < 1) {
-            visible = false;
-          }
-          else {
-            visible = true;
-          }
-          flashTimer += DEFAULT_FLASH_SPEED;
-          if(flashTimer > Math.PI*4) {
-            flashTimer -= Math.PI*4;
-          }
-          sprite.color = HXP.colorLerp(flashColor, 0xFFFFFF, Math.abs(Math.sin(flashTimer)));
+            if(flashTimer%Math.PI < 1) {
+                visible = false;
+            }
+            else {
+                visible = true;
+            }
+            flashTimer += DEFAULT_FLASH_SPEED;
+            if(flashTimer > Math.PI*4) {
+                flashTimer -= Math.PI*4;
+            }
+            sprite.color = HXP.colorLerp(
+                flashColor, 0xFFFFFF, Math.abs(Math.sin(flashTimer))
+            );
         }
         else {
-          flashTimer = 0;
+            flashTimer = 0;
         }
         if(health <= 0) {
-          die();
+            die();
         }
     }
 
     public function startFlashing()
     {
-      flashTimer = 0;
-      isFlashing = true;
+        flashTimer = 0;
+        isFlashing = true;
     }
 
     public function stopFlashing()
     {
-      isFlashing = false;
-      sprite.color = 0xFFFFFF;
-      visible = true;
+        isFlashing = false;
+        sprite.color = 0xFFFFFF;
+        visible = true;
     }
 
     public function takeDamage(damage:Int) {
-      health -= damage;
-      startFlashing();
-      damageFlash.restart();
+        health -= damage;
+        startFlashing();
+        damageFlash.restart();
     }
 
     public function die() {
-      scene.remove(this);
+        scene.remove(this);
     }
 
 
@@ -93,7 +95,7 @@ class ActiveEntity extends Entity
     {
         while(collide('walls', x, y) != null)
         {
-          moveBy(0, -10);
+            moveBy(0, -10);
         }
     }
 
@@ -110,8 +112,8 @@ class ActiveEntity extends Entity
     private function isOnWall()
     {
         return (
-          collide("walls", x - 1, y) != null ||
-          collide("walls", x + 1, y) != null
+            collide("walls", x - 1, y) != null ||
+            collide("walls", x + 1, y) != null
         );
     }
 

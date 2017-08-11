@@ -42,87 +42,87 @@ class Luster extends ActiveEntity
 
     static public function offsetDestinationForGroup()
     {
-      var allLusters = new Array<Luster>();
-      HXP.scene.getClass(Luster, allLusters);
-      var count = 0;
-      for(luster in allLusters) {
-        if(!luster.isActive) {
-          continue;
+        var allLusters = new Array<Luster>();
+        HXP.scene.getClass(Luster, allLusters);
+        var count = 0;
+        for(luster in allLusters) {
+            if(!luster.isActive) {
+                continue;
+            }
+            if(count == 0) {
+                // do nothing
+            }
+            else if(count % 2 == 0) {
+                luster.destination.x += Math.ceil(count/2) * GROUP_SPACING;
+                luster.destination.y -= Math.ceil(count/2) * GROUP_SPACING;
+            }
+            else {
+                luster.destination.x += Math.ceil(count/2) * -GROUP_SPACING;
+                luster.destination.y -= Math.ceil(count/2) * GROUP_SPACING;
+            }
+            count++;
         }
-        if(count == 0) {
-          // do nothing
-        }
-        else if(count % 2 == 0) {
-          luster.destination.x += Math.ceil(count/2) * GROUP_SPACING;
-          luster.destination.y -= Math.ceil(count/2) * GROUP_SPACING;
-        }
-        else {
-          luster.destination.x += Math.ceil(count/2) * -GROUP_SPACING;
-          luster.destination.y -= Math.ceil(count/2) * GROUP_SPACING;
-        }
-        count++;
-      }
     }
 
     public override function update()
     {
-      var player = HXP.scene.getInstance("player");
-      if(distanceFrom(player, true) <= ACTIVATE_RADIUS) {
-        isActive = true;
-      }
-      if(isActive) {
-        moveTowards(destination.x, destination.y, CHASE_SPEED);
-      }
-      if(distanceToPoint(destination.x, destination.y, true) < 50) {
-        sprite.play("shoot");
-        shoot();
-      }
-      else {
-        sprite.play("idle");
-      }
+        var player = HXP.scene.getInstance("player");
+        if(distanceFrom(player, true) <= ACTIVATE_RADIUS) {
+            isActive = true;
+        }
+        if(isActive) {
+            moveTowards(destination.x, destination.y, CHASE_SPEED);
+        }
+        if(distanceToPoint(destination.x, destination.y, true) < 50) {
+            sprite.play("shoot");
+            shoot();
+        }
+        else {
+            sprite.play("idle");
+        }
 
-      y += Math.sin(bobTimer) * BOB_HEIGHT;
-      bobTimer += BOB_SPEED;
-      if(bobTimer > Math.PI*4) {
-        bobTimer -= Math.PI*4;
-      }
+        y += Math.sin(bobTimer) * BOB_HEIGHT;
+        bobTimer += BOB_SPEED;
+        if(bobTimer > Math.PI*4) {
+            bobTimer -= Math.PI*4;
+        }
 
-      if(collide("sword", x, y) != null) {
-        die();
-      }
-      var bullet = collide("bullet", x, y);
-      if(bullet != null) {
-        takeDamage(50);
-        scene.remove(bullet);
-      }
+        if(collide("sword", x, y) != null) {
+            die();
+        }
+        var bullet = collide("bullet", x, y);
+        if(bullet != null) {
+            takeDamage(50);
+            scene.remove(bullet);
+        }
 
-      destination.x = player.centerX - halfWidth;
-      destination.y = player.centerY - halfHeight - HOVER_HEIGHT;
+        destination.x = player.centerX - halfWidth;
+        destination.y = player.centerY - halfHeight - HOVER_HEIGHT;
 
-      super.update();
+        super.update();
     }
 
     override public function die() {
-      scene.add(new Explosion(this));
-      scene.remove(this);
+        scene.add(new Explosion(this));
+        scene.remove(this);
     }
 
     override public function takeDamage(damage:Int) {
-      isActive = true;
-      health -= damage;
-      startFlashing();
-      damageFlash.restart();
+        isActive = true;
+        health -= damage;
+        startFlashing();
+        damageFlash.restart();
     }
 
     private function shoot()
     {
-      if(cooldownTimer > 0) {
-        cooldownTimer -= 1;
-      }
-      else {
-        scene.add(new Missile(centerX - 6, centerY, new Point(0, MISSILE_SPEED)));
-        cooldownTimer = SHOT_COOLDOWN;
-      }
+        if(cooldownTimer > 0) {
+            cooldownTimer -= 1;
+        }
+        else {
+            scene.add(new Missile(centerX - 6, centerY, new Point(0, MISSILE_SPEED)));
+            cooldownTimer = SHOT_COOLDOWN;
+        }
     }
 
 }
