@@ -23,36 +23,19 @@ class ActiveEntity extends Entity
     public function new(x:Int, y:Int, health:Int=100)
     {
         super(x, y);
+        this.sprite = null;
+        this.velocity = new Point(0, 0);
+        this.flashColor = DEFAULT_FLASH_COLOR;
+        this.flashTimer = 0;
+        this.isFlashing = false;
         this.health = health;
-        flashColor = 0xFF0000;
-        isFlashing = false;
-        flashTimer = 0;
-        damageFlash = new Timer(DAMAGE_FLASH_DURATION);
-        velocity = new Point(0, 0);
-    }
-
-    public function getScreenCoordinates() {
-      return new Point(
-        Math.floor(x / HXP.screen.width),
-        Math.floor(y / HXP.screen.height)
-      );
+        this.damageFlash = new Timer(DAMAGE_FLASH_DURATION);
     }
 
     public function finishInitializing()
     {
-        sprite.smooth = false;
-        graphic = sprite;
-    }
-
-    public function startFlashing() {
-      flashTimer = 0;
-      isFlashing = true;
-    }
-
-    public function stopFlashing() {
-      isFlashing = false;
-      sprite.color = 0xFFFFFF;
-      visible = true;
+      sprite.smooth = false;
+      graphic = sprite;
     }
 
     public override function update()
@@ -77,19 +60,22 @@ class ActiveEntity extends Entity
         else {
           flashTimer = 0;
         }
-        /*unstuck();*/
         if(health <= 0) {
           die();
         }
     }
 
-    /*public function flash(flashColor:Int=0xFF0000) {
-      this.flashColor = flashColor;
+    public function startFlashing()
+    {
+      flashTimer = 0;
       isFlashing = true;
-    }*/
+    }
 
-    public function die() {
-      scene.remove(this);
+    public function stopFlashing()
+    {
+      isFlashing = false;
+      sprite.color = 0xFFFFFF;
+      visible = true;
     }
 
     public function takeDamage(damage:Int) {
@@ -98,10 +84,10 @@ class ActiveEntity extends Entity
       damageFlash.restart();
     }
 
-    public function getPositionOnScreen()
-    {
-      return new Point(x % HXP.screen.width, y % HXP.screen.height);
+    public function die() {
+      scene.remove(this);
     }
+
 
     private function unstuck()
     {
@@ -138,4 +124,5 @@ class ActiveEntity extends Entity
     {
         return collide("walls", x - 1, y) != null;
     }
+
 }
