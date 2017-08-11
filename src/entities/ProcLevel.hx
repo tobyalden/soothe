@@ -10,7 +10,6 @@ import com.haxepunk.masks.*;
 class ProcLevel extends Entity
 {
   public static inline var TILE_SIZE = 7;
-  /*public static inline var levelScale = 3;*/
   public static inline var BIGGIFY_SCALE = 5;
 
   public static inline var OFFSET_CHANCE = 0.01;
@@ -27,20 +26,19 @@ class ProcLevel extends Entity
   public var levelWidth:Int;
   public var levelHeight:Int;
   public var levelScale:Int;
-  public var hasSubLevel:Bool;
 
-  public function new(x:Int, y:Int, levelWidth:Int, levelHeight:Int, levelScale:Int, hasSubLevel:Bool) {
+  public function new(
+    x:Int, y:Int, levelWidth:Int, levelHeight:Int, levelScale:Int
+  ) {
     super(x, y);
+    this.map = [for (y in 0...levelHeight) [for (x in 0...levelWidth) 0]];
+    this.entities = new Array<Entity>();
     this.levelWidth = levelWidth;
     this.levelHeight = levelHeight;
     this.levelScale = levelScale;
-    this.hasSubLevel = hasSubLevel;
-    map = [for (y in 0...levelHeight) [for (x in 0...levelWidth) 0]];
-    entities = new Array<Entity>();
+    type = "walls";
+    layer = 20;
     generateLevel();
-    if(hasSubLevel) {
-      createSubLevel();
-    }
     addEntitiesToScene();
     finishInitializing();
   }
@@ -48,8 +46,9 @@ class ProcLevel extends Entity
   public function finishInitializing() {
     tiles.scale = levelScale;
     tiles.smooth = false;
-    graphic = tiles;
     tiles.loadFrom2DArray(map);
+    graphic = tiles;
+
     collisionMask = new Grid(
       levelScale * levelWidth * TILE_SIZE,
       levelScale * levelHeight * TILE_SIZE,
@@ -58,8 +57,6 @@ class ProcLevel extends Entity
     );
     collisionMask.loadFrom2DArray(map);
     mask = collisionMask;
-    type = "walls";
-    layer = 20;
   }
 
   public function generateLevel() {
@@ -81,11 +78,9 @@ class ProcLevel extends Entity
       TILE_SIZE
     );
     placeWater();
-    /*if(hasSubLevel) {*/
-      placePlayers();
-      placeEnemies();
-      placeDoors();
-    /*}*/
+    placePlayers();
+    placeEnemies();
+    placeDoors();
     prettifyMap();
   }
 
@@ -575,35 +570,5 @@ class ProcLevel extends Entity
   public function isInMap(checkX:Int, checkY:Int) {
       return checkX >= 0 && checkX < levelWidth && checkY >= 0 && checkY < levelHeight;
     }
-
-  public function createSubLevel()
-  {
-    var point = pickRandomOpenPointWithRoom(50);
-    var largestRect = [
-      "x"=>Math.round(point.x), "y"=>Math.round(point.y),
-      "width"=>50, "height"=>50
-    ];
-    for(x in 0...largestRect["width"]) {
-      for(y in 0...largestRect["height"]) {
-        map[largestRect["y"] + y][largestRect["x"] + x] = 0;
-      }
-    }
-    var largestSpace = new DebugSquare(
-      largestRect["x"] * TILE_SIZE * levelScale,
-      largestRect["y"] * TILE_SIZE * levelScale,
-      largestRect["width"] * TILE_SIZE * levelScale,
-      largestRect["height"] * TILE_SIZE * levelScale
-    );
-    entities.push(largestSpace);
-    var subLevel = new ProcLevel(
-      largestRect["x"] * TILE_SIZE * levelScale,
-      largestRect["y"] * TILE_SIZE * levelScale,
-      largestRect["width"],
-      largestRect["height"],
-      1,
-      false
-    );
-    entities.push(subLevel);
-  }
 
 }

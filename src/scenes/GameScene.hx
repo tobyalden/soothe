@@ -22,7 +22,7 @@ class GameScene extends Scene
 
 	public override function begin()
 	{
-    this.level = new ProcLevel(0, 0, 25, 25, 3, false);
+    this.level = new ProcLevel(0, 0, 25, 25, 3);
 		this.transition = new Transition();
 		this.paused = false;
 		this.isTransitioning = false;
